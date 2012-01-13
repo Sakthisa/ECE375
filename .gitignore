@@ -1,4 +1,8 @@
-*
-*/*
-!Labs
-.gitignore
+avra-1.3.0
+avra-1.3.0.tar.bz2
+avr-libc-1.6.4
+avr-libc-1.6.4.tar.bz2
+binutils-2.19.1
+binutils-2.19.1.tar.bz2
+osuisp2
+WebSite
