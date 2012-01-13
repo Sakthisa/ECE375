@@ -6,3 +6,9 @@ binutils-2.19.1
 binutils-2.19.1.tar.bz2
 osuisp2
 WebSite
+*/*.hex
+*/*.eep.hex
+*/*.obj
+*/*.o
+Labs/starterguide.pdf
+
