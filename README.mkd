@@ -1,0 +1,7 @@
+
+Install Notes
+=============
+m128ref.inf found here http://www.attiny.com/definitions.htm
+avrdude found here http://beaversource.oregonstate.edu/projects/osuisp2/wiki/AvrdudeLinux
+avra found here http://sourceforge.net/projects/avra/files/latest/download
+    Note: Don't get the avr assembler from ubuntu's repo's or EPEL. The version is ancient.
