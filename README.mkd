@@ -1,7 +1,41 @@
-
 Install Notes
 =============
 m128ref.inf found here http://www.attiny.com/definitions.htm
-avrdude found here http://beaversource.oregonstate.edu/projects/osuisp2/wiki/AvrdudeLinux
-avra found here http://sourceforge.net/projects/avra/files/latest/download
-    Note: Don't get the avr assembler from ubuntu's repo's or EPEL. The version is ancient.
+
+    wget http://www.attiny.com/software/AVR000.zip
+    unzip AVR000.zip
+    ls AVR000/m128ref.inf
+
+OSU's avrdude is found here http://beaversource.oregonstate.edu/projects/osuisp2/wiki/AvrdudeLinux
+
+    svn co --username uberj https://code.oregonstate.edu/svn/osuisp2
+
+Follow the instuctions on Beaversource to install avrdude.
+
+The avra is found here http://sourceforge.net/projects/avra/files/latest/download
+
+    wget http://sourceforge.net/projects/avra/files/latest/download -O avara-1.3.0.tar.bz2
+
+I had some trouble installing this, here are the hacks I did to get it installed.
+
+    cd avra-1.3.0/src/
+    touch NEWS ChangeLog
+    automake --add-missing
+    ./configure
+    make
+    sudo make install
+
+Make sure you have the package `automake` and `build-essentials` installed (this is what they are called on ubuntu).
+
+
+Note: Don't get the avr assembler from ubuntu's repo's or EPEL. The version is ancient.
+
+Now that you have everything installed you can compile `.asm` files into `.hex`.
+
+    avra ece375-L1_v2.asm
+
+You should now see a `.hex` file. Use avrdude to upload it to the board.
+
+    /usr/local/bin/avrdude -c osuisp2 -P /dev/usb/hiddev0 -p m128 -e -U flash:w:ece375-L1_v2.hex -v
+
+
