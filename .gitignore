@@ -10,5 +10,6 @@ WebSite
 */*.eep.hex
 */*.obj
 */*.o
+*/*.cof
 Labs/starterguide.pdf
 
