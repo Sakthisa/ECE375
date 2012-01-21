@@ -1,0 +1,85 @@
+
+8-bit AVR Microcontroller
+* 8-bit data, 16-bit instructions
+    * memory locations are 8 bits.
+
+Many version of the AVR processor.
+    * We are talking about the atmega128
+
+atmega128 Memory
+----------------
+### Program memory
+2**16 memory addresses 0x0000 <-> 0xFFFF
+Each memory location has 8 bits of data.
+
+### Data memory (Volitile)
+0x0000 <-> 0x10FF
+32 8-bit GPR's (Genral Purpose Registers)
+    * R0-R31
+    * 16-bit X-, Y-, and Z- Registers
+        * Used as address registers
+
+    * Status Register
+        +---+---+---+---+---+---+---+---+
+        | I | T | H | S | V | N | Z | C |
+        +---+---+---+---+---+---+---+---+
+
+        I - Global Interrupt Enable
+        T - Bit Copy Storage
+        H - Half Carry Flag
+        S - Sign Bit (tells when the sign bit of an overation bit is '1')
+        V - 2's Comp Overflow flag
+        N - Negative Flag (result of 2's compliment)
+        Z - Zero Flag
+        C - Carry Flag
+
+    * PC (Program counter)
+64 8-bit I/O regs
+160 Ext. 8-bit I/O regs
+Internal SRAM 4029x8
+
+Addressing Modes
+----------------
+_Defines the way operands are accessed_
+###Modes in AVR:
+    * Register (with 1 and 2 registers)
+        - Instruction points to it's two opperands
+        1 Address Machine
+        -----------------
+        15                          4             0
+        +---------------------------+-------------+
+                OP                          d
+        +---------------------------+-------------+
+        d  - points to a register
+        OP - opperation
+
+        INC R16 - Inciment register pointed to by d (16)
+        CLR R22 - Clears register 22
+
+        2 Address Machine
+        -----------------
+        15             9          5 4             0
+        +---------------------------+-------------+
+        |       OP     |     r      |      d      |
+        +---------------------------+-------------+
+
+        r - source register
+        d - destination register
+
+        ADD R16, R17 - Add's contents of R17 to R16 and stores in R16.
+        CP  R22, R3  - Compare. Takes content of R3 and subtracts from R22. Nothing is changed in registers.
+        MOV R0, R1   - Move contents of R1 into R0. Contents of R0 are overwritten.
+
+        31                     20 19             16
+        +-------------------------+---------------+
+                OP                      Rr/Rd
+        +-------------------------+---------------+
+        +-----------------------------------------+
+        |                16 LSBs                  |
+        +-----------------------------------------+
+        15                                        0
+
+        STS 0x1000, R16   - Copy the contents of Program Memory at location at 0x1000 and store in R16
+
+    * Direct
+    * Indirect
