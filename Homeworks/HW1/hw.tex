@@ -1,0 +1,113 @@
+% template created by: Russell Haering. arr. Joseph Crop
+\documentclass[12pt,letterpaper]{article}
+\usepackage{anysize}
+\marginsize{2cm}{2cm}{1cm}{1cm}
+
+\begin{document}
+
+\begin{titlepage}
+    \vspace*{4cm}
+    \begin{flushright}
+    {\huge
+        ECE 375 Homework 1\\[1cm]
+    }
+    \end{flushright}
+    \begin{flushleft}
+    Lab Time: Wednesday 5-7
+    \end{flushleft}
+    \begin{flushright}
+    Jacques Uber
+    \vfill
+    \end{flushright}
+
+\end{titlepage}
+
+\section{Questions}
+\begin{enumerate}
+    \item
+    Consider the pseudo-CPU discussed in class. Suppose the instruction format is 16 bits and is
+    divided into three fields: opcode field, addressing mode (AM) field that specifies direct,
+    indirect, indirect with pre-decrement, and indirect with post-increment addressing mode, and an
+    address field as shown below
+
+    \begin{enumerate}
+        \item
+        How many bits are in the opcode field, the addressing mode field, and
+        the address field? What is the maximum number of opcodes that can be
+        incorporated into the CPU? What is the size of the memory in term of number of
+        16-bit words?
+
+        Text of the first part of the answer
+
+        \item
+        How many bits are in the registers PC, MAR, MDR, IR, and AC?
+
+        Text of the second part of the answer
+    \end{enumerate}
+
+
+    \item
+    Consider the following hypothetical 1-address assembly instruction called “Add
+    Then Store Indirect with Post- increment” of the form
+    \begin{verbatim}
+         ADDST (x)+         ; M(M(x)) ← AC + M(M(x)), M(x) ← M(x)+1
+    \end{verbatim}
+    Note that this instruction does not modify the original content of the AC.
+    Suppose we want to implement this instruction on the pseudo-CPU discussed in
+    class. An instruction consists of 16 bits: A 4-bit opcode (includes I- bit) and
+    a 12-bit address. All operands are 16 bits. PC and MAR each contain 12 bits.
+    AC, MDR, and TEMP each contain 16 bits, and IR is 4 bits. Give the sequence of
+    microoperations required to implement the Execute cycle (Fetch cycle is given
+    below) for the above ADDST (x)+ instruction. Your solution should result in
+    exactly 10 microoperations. Assume PC is currently pointing to the ADDST
+    instruction and only PC and AC have the capability to increment/decrement
+    itself.
+    
+    Answer
+
+    \item
+    Consider the structure of the simple-CPU discussed in class augmented with a
+    single-port register file (i.e., only one register value can be read at a time)
+    containing 32 8-bit registers (R31-R30). Suppose the pseudo-CPU can be used to
+    implement the AVR instruction ST Y, R5. Give the sequence of microoperations
+    required to Fetch and Execute AVR’s ST Y, R5 instruction. Your solutions should
+    result in exactly 6 cycles for the fetch cycle and 4 cycles for the execute
+    cycle. You may assume only the AC and PC registers have the capability to
+    increment/decrement itself. Assume MDR register is 8-bit wide (which implies
+    that memory is organized into consecutive addressable bytes), and AC, PC, IR,
+    and MAR are 16-bit wide. Also, assume Internal Data Bus is 16-bit wide and can
+    handle 8-bit or 16-bit (as well as portion of 8-bit or 16-bit) transfers in one
+    microoperation.  Note that if you transfer an 8-bit value to either upper or
+    lower bytes of a register REG, you must specify it as REG(H) or REG(L),
+    respectively.
+
+
+    Answer
+
+    \item
+    Based on the initial register and data memory contents shown below
+    (represented in hexadecimal), show how these contents are modified (in
+    hexadecimal) after executing each of the following AVR assembly instructions.
+    Do not be concerned about what happens to the Status Register (SREG) after the
+    operation. Instructions are unrelated.
+
+    \begin{enumerate}
+        \item
+        Text of the first part of the answer
+
+        \item
+        Text of the second part of the answer
+
+        \item
+        Text of the first part of the answer
+
+        \item
+        Text of the second part of the answer
+
+        \item
+        Text of the second part of the answer
+    \end{enumerate}
+
+\end{enumerate}
+
+\end{document}
