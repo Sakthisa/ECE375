@@ -83,3 +83,7 @@ _Defines the way operands are accessed_
 
     * Direct
     * Indirect
+
+IO
+--
+IN Rd, A #Read from port A into Rd

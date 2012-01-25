@@ -24,52 +24,48 @@ int main(void)
     DDRB =0b11110000;	//Setup Port B for Input/Output
     PORTB=0b11110000;	//Turn off both motors
 
-    while (1)	       					// Loop Forever
-    {
+    while (1) { // Loop Forever
         // Your code goes here
         PORTB=0b01100000; //Make TekBot move forward
         // right
         if ( !(PIND & 1) ){
-	    // Go forward 
-            PORTB=0b01100000;	//forward
+            // Go forward
+            PORTB=0b01100000;//forward
             _delay_ms(1000);
 
-	    // go back	
-	    PORTB=0b00000000;
-	    _delay_ms(500);
+            // go back
+            PORTB=0b00000000;
+            _delay_ms(500);
             // turn right
-            PORTB=0b00100000;	//Turn right
+            PORTB=0b00100000;//Turn right
             _delay_ms(500);
         }
         // If we get hit on left
         else if ( !(PIND & 2) ) {
-            
-	    // Go forward
-	             // Go forward 
-            PORTB=0b01100000;	//forward
+
+            // Go forward
+            PORTB=0b01100000;//forward
             _delay_ms(1000);
-  	
-	    // Go back
-            PORTB=0b00000000;	//Reverse
+
+            // Go back
+            PORTB=0b00000000;//Reverse
             _delay_ms(500);
-            
-	    // turn left
-            PORTB=0b01000000;	//Turn left
+
+            // turn left
+            PORTB=0b01000000;//Turn left
             _delay_ms(500);
         }
         else if ( !(PIND & 3) ){
-            // Go forward 
-            PORTB=0b01100000;	//forward
+            // Go forward
+            PORTB=0b01100000;//forward
             _delay_ms(1000);
 
- 	    // Go back
-            PORTB=0b00000000;	//Reverse
+            // Go back
+            PORTB=0b00000000;//Reverse
             _delay_ms(500);
             // turn left
-            PORTB=0b01000000;	//Turn left
+            PORTB=0b01000000;//Turn left
             _delay_ms(500);
         }
-        
-
     };
 }
