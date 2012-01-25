@@ -1,6 +1,22 @@
-lab1:
-	latex ece375-lab1.tex
-	rm ece375-lab1.log
-	rm ece375-lab1.aux
-	dvips ece375-lab1.dvi -o ece375-lab1.pdf
-	rm ece375-lab1.dvi
+TEXFILE="ece375-lab2"
+lab2:
+	pdflatex $(TEXFILE).tex
+	rm $(TEXFILE).log
+	rm $(TEXFILE).aux
+lab2-view:
+	pdflatex $(TEXFILE).tex
+	rm $(TEXFILE).log
+	rm $(TEXFILE).aux
+	evince $(TEXFILE).pdf
+
+TEXFILE="lab3-prelab"
+lab3-prelab:
+	pdflatex $(TEXFILE).tex
+	rm $(TEXFILE).log
+	rm $(TEXFILE).aux
+lab3-prelab-view:
+	pdflatex $(TEXFILE).tex
+	rm $(TEXFILE).log
+	rm $(TEXFILE).aux
+	evince $(TEXFILE).pdf
+

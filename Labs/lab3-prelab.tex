@@ -1,0 +1,73 @@
+% template created by: Russell Haering. arr. Joseph Crop
+\documentclass[12pt]{article}
+\usepackage[hmargin=1in, vmargin=1in]{geometry}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\usepackage[hang,small]{caption}
+\usepackage{lastpage}
+\usepackage{graphicx}
+\usepackage{verbatim}
+\DeclareGraphicsExtensions{.jpg}
+\usepackage{url}
+
+\def\author{Jacques Uber}
+\def\title{Lab3 Pre-Lab Questions}
+\def\date{\today}
+
+\fancyhf{} % clear all header and footer fields
+\fancyhead[LO]{\author}
+\fancyhead[RO]{\date}
+% The weird spacing here is to get the spacing of \thepage to be right.
+\fancyfoot[C]{\thepage\
+                    / 7}
+
+                    \setcounter{secnumdepth}{0}
+                    \setlength{\parindent}{0pt}
+                    \setlength{\parskip}{4mm}
+                    \linespread{1.4}
+
+
+\begin{document}
+\fancyhf{} % clear all header and footer fields
+\fancyhead[LO]{\author}
+\fancyhead[RO]{\date}
+\fancyhead[CO]{\title}
+
+
+
+\section{Pre-Lab}
+\begin{enumerate}
+    \item
+    What is the stack pointer? How is the stack pointer used and how do you initialize it? Provide
+    pseudo-code (NOT actual assembly code) that illustrates how to initialize the stack pointer.
+
+    The stack pointer points to the top of the stack. This is how I would initialize it.
+    \begin{verbatim}
+    STACK_BASE = 0x00B0
+    Move STACK_BASE into SP
+    \end{verbatim}
+
+
+    \item
+    What does the AVR instruction LPM do and how do you use it? Provide pseudo-code that shows how
+    to use the LPM instruction.
+
+    It loads one byte from program memory into a register.
+    \begin{verbatim}
+    X = 0xDEAD
+    LPM R3, X
+    \end{verbatim}
+
+    \item
+    Look at the definition file m128def.inc. What is contained within this definition file? What are
+    the benefits of using this definition file?  How would you include it into your AVR Assembly
+    program?
+
+    The m128def.inc file defines a lot of usefull constants (like PIN values). You include it by
+    haveing the following line in your .asm file.
+    \begin{verbatim}
+    .include "m128def.inc"
+    \end{verbatim}
+
+\end{enumerate}
+\end{document}
