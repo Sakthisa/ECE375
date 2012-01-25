@@ -7,6 +7,7 @@ binutils-2.19.1.tar.bz2
 osuisp2
 WebSite
 */*.hex
+*/*.pdf
 */*.eep.hex
 */*.obj
 */*.o
