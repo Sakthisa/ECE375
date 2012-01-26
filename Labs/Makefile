@@ -9,7 +9,6 @@ lab2-view:
 	rm $(TEXFILE).aux
 	evince $(TEXFILE).pdf
 
-TEXFILE="lab3-prelab"
 lab3-prelab:
 	pdflatex $(TEXFILE).tex
 	rm $(TEXFILE).log
