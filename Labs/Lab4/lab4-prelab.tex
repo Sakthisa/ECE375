@@ -1,0 +1,87 @@
+% template created by: Russell Haering. arr. Joseph Crop
+\documentclass[12pt]{article}
+\usepackage[hmargin=1in, vmargin=1in]{geometry}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\usepackage[hang,small]{caption}
+\usepackage{lastpage}
+\usepackage{graphicx}
+\usepackage{verbatim}
+\DeclareGraphicsExtensions{.jpg}
+\usepackage{url}
+
+\def\author{Jacques Uber}
+\def\title{Lab4 Pre-Lab Questions}
+\def\date{\today}
+
+\fancyhf{} % clear all header and footer fields
+\fancyhead[LO]{\author}
+\fancyhead[RO]{\date}
+% The weird spacing here is to get the spacing of \thepage to be right.
+\fancyfoot[C]{\thepage\
+                    / 7}
+
+                    \setcounter{secnumdepth}{0}
+                    \setlength{\parindent}{0pt}
+                    \setlength{\parskip}{4mm}
+                    \linespread{1.4}
+
+
+\begin{document}
+\fancyhf{} % clear all header and footer fields
+\fancyhead[LO]{\author}
+\fancyhead[RO]{\date}
+\fancyhead[CO]{\title}
+
+
+
+\section{Pre-Lab}
+\begin{enumerate}
+    \item
+    For this lab, you will be asked to perform arithmetic operations on numbers that are larger than
+    8-bits. To do this, you should understand the different arithmetic operations supported by the AVR
+    Architecture. List and describe all the different forms of ADD, SUB, and MUL (i.e. ADC, SUBI, MULF,
+    etc.).
+
+    \begin{verbatim}
+    ADC: Add with carry.
+
+    ADD: Add without carry.
+
+    ADIW: Add an immediate value (0 - 63) to a register.
+
+    SUB: Subtract and immediate value from a register.
+
+    SBC: Subtract two registers using the C flag.
+
+    SBCI: Subtracts an immediate value using the C flag from a register.
+
+    SBIW: Subtract and immediate from a register and places the result into the register.
+
+    MUL: Multiplies two unsigned 8-bit numbers.
+
+    MULS: Multiplies two signed 8-bit numbers.
+
+    MULSU: Multiple two 8-bit numbers. One signed and one unsigned.
+
+    FMUL: Fractional multiply unsigned. Multiplies two 8-bit numbers and multiplies the result by two.
+
+    FMULS: Fractional multiply but with signed numbers.
+    \end{verbatim}
+
+    \item
+    Write pseudo-code that describes a function that will take two 16-bit numbers in data memory
+    addresses \$0110-\$0111 and \$0121- \$0122 and add them together. The function will then store the
+    resulting 16-bit number at the address \$0100-\$0101. (Hint: The upper address corresponds to the high
+    byte of the number and don't forget about the carry in bit.)
+
+    \begin{verbatim}
+    r0 = X ; X = 0110
+    r1 = Y ; Y = 0121
+    ADC r0, r1
+    LOW(Z) = r0
+    HIGH(Z) = C ; carry bit
+    \end{verbatim}
+
+\end{enumerate}
+\end{document}

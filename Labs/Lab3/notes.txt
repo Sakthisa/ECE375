@@ -1,0 +1,1 @@
+avr-gcc -Wall -mmcu=atmega128 -o simple.o simple.c && avr-objcopy -j .text -O ihex simple.o simple.hex && sudo /usr/local/bin/avrdude -c osuisp2 -P /dev/usb/hiddev0 -p m128 -e -U flash:w:simple.hex -v
