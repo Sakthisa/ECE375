@@ -1,0 +1,131 @@
+% template created by: Russell Haering. arr. Joseph Crop
+\documentclass[12pt]{article}
+\usepackage[hmargin=1in, vmargin=1in]{geometry}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\usepackage[hang,small]{caption}
+\usepackage{lastpage}
+\usepackage{graphicx}
+\usepackage{verbatim}
+\DeclareGraphicsExtensions{.jpg}
+\usepackage{url}
+
+\def\author{Jacques Uber}
+\def\title{Lab5 Pre-Lab Questions}
+\def\date{\today}
+
+\fancyhf{} % clear all header and footer fields
+\fancyhead[LO]{\author}
+\fancyhead[RO]{\date}
+% The weird spacing here is to get the spacing of \thepage to be right.
+\fancyfoot[C]{\thepage\
+                    / 7}
+
+                    \setcounter{secnumdepth}{0}
+                    \setlength{\parindent}{0pt}
+                    \setlength{\parskip}{4mm}
+                    \linespread{1.4}
+
+
+\begin{document}
+\fancyhf{} % clear all header and footer fields
+\fancyhead[LO]{\author}
+\fancyhead[RO]{\date}
+\fancyhead[CO]{\title}
+
+
+
+\section{Pre-Lab}
+\begin{enumerate}
+    \item
+    In computing there are traditionally two ways for a microprocessor to listen to other devices and
+    communicate. These two methods are commonly called ‘polling’ and ‘interrupts.’ A large amount of
+    information about these two methods exists. Please describe what each of them is and a few examples
+    where you would choose one over the other.
+
+    Polling is used when you are handling events that are synchronous, happening frequently, and not
+    a high priority. This is likely used for reading data off of a network card. Interrupts are used
+    when you need to handle events that are asynchronous, happening relativly infreaquently, and are of high
+    priority. Interrupts are good for real time applications like sensors.
+
+    \item
+    What is the function for each bit in the following registers in the ATMega128? EICRA, EICRB, and
+    EIMSK. You can find this information from either the AVR Instruction Set guide, or the ATMega128
+    Reference Manual both located on the lab web site.  HINT: These registers are related to ‘external
+    interrupts.’
+
+    \begin{verbatim}
+    Configuration behavior for EICRA and EICRB:
+    00 - Low Level triggers an interrupt
+    01 - Any logical change
+    10 - Falling edge
+    11 - Rising edge
+
+    EICRA: (Located a $6A)
+    bit 0 => Configuring behavior for interrupt 0
+    bit 1 => Configuring behavior for interrupt 0
+    bit 2 => Configuring behavior for interrupt 1
+    bit 3 => Configuring behavior for interrupt 1
+    bit 4 => Configuring behavior for interrupt 2
+    bit 5 => Configuring behavior for interrupt 2
+    bit 6 => Configuring behavior for interrupt 3
+    bit 7 => Configuring behavior for interrupt 3
+
+    EICRB: (Located a $6A)
+    bit 0 => Configuring behavior for interrupt 4
+    bit 1 => Configuring behavior for interrupt 4
+    bit 2 => Configuring behavior for interrupt 5
+    bit 3 => Configuring behavior for interrupt 5
+    bit 4 => Configuring behavior for interrupt 6
+    bit 5 => Configuring behavior for interrupt 6
+    bit 6 => Configuring behavior for interrupt 7
+    bit 7 => Configuring behavior for interrupt 7
+
+    Configuration behavior for EIMSL:
+    0 - Interrupt is disabled
+    1 - Interrupr is enabled
+
+    EIMSK: (Located at $39)
+    bit 0 => Configuring behavior for interrupt 0
+    bit 1 => Configuring behavior for interrupt 1
+    bit 2 => Configuring behavior for interrupt 2
+    bit 3 => Configuring behavior for interrupt 3
+    bit 4 => Configuring behavior for interrupt 4
+    bit 5 => Configuring behavior for interrupt 5
+    bit 6 => Configuring behavior for interrupt 6
+    bit 7 => Configuring behavior for interrupt 7
+
+    \end{verbatim}
+
+
+    \item
+    The AVR microcontroller uses ‘interrupt vectors’ to run code when an interrupt is triggered.
+    What is an interrupt vector? List the memory locations for the following vectors in the AVR
+    microcontroller: Timer/Counter2 Comparison Match, External Interrupt 2, and USART1-Rx Complete.
+
+    An interrupt vector is a member of the interrupr vector table. The table holds the addresses
+    that will called when a specific interrupt is called.
+
+    The memory location of Timer/Counter2 Comparison Match vector is: \$0012
+    The memory location of External Interrupt 2 vector is: \$0006
+    The memory location of the USART1-Rx Complete Inturrept vector is: \$003C
+
+    \item
+    In the AVR microcontroller, like many others, there are several different ways of triggering
+    interrupts. Below is a sample signal being input onto one of the external interrupt pins. List where
+    the interrupt would trigger on this waveform if the interrupt was set up as: a.) rising edge, b.)
+    Falling Edge, c.) Level High, and d.) Level Low.
+
+    \begin{itemize}
+        \item
+        time 8 and 23
+        \item
+        time 3 and 20
+        \item
+        time 9 and 24
+        \item
+        time 4 and 21
+    \end{itemize}
+
+\end{enumerate}
+\end{document}
