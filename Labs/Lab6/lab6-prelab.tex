@@ -1,0 +1,54 @@
+% template created by: Russell Haering. arr. Joseph Crop
+\documentclass[12pt]{article}
+\usepackage[hmargin=1in, vmargin=1in]{geometry}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\usepackage[hang,small]{caption}
+\usepackage{lastpage}
+\usepackage{graphicx}
+\usepackage{verbatim}
+\DeclareGraphicsExtensions{.jpg}
+\usepackage{url}
+
+\def\author{Jacques Uber}
+\def\title{Lab6 Pre-Lab Questions}
+\def\date{\today}
+
+\fancyhf{} % clear all header and footer fields
+\fancyhead[LO]{\author}
+\fancyhead[RO]{\date}
+% The weird spacing here is to get the spacing of \thepage to be right.
+\fancyfoot[C]{\thepage\
+                    / 7}
+
+                    \setcounter{secnumdepth}{0}
+                    \setlength{\parindent}{0pt}
+                    \setlength{\parskip}{4mm}
+                    \linespread{1.4}
+
+
+\begin{document}
+\fancyhf{} % clear all header and footer fields
+\fancyhead[LO]{\author}
+\fancyhead[RO]{\date}
+\fancyhead[CO]{\title}
+
+
+
+\section{Pre-Lab}
+\begin{enumerate}
+    \item
+    In this project you are going to be given a set of functions that you need to have your ‘toy’
+    perform. Find another toy that uses a microcontroller and describe the functions that it performs.
+    For each function, explain the interesting code (mega128 specific – setup registers ext.),
+    mechanics, and/or electronics needed.
+
+    A remote control car would probably have a microcontroller in it. The car would have to listen
+    to control signals from the controller. It would have to do what a signal commanded to do it
+    when it received a command from the controller. It could listen for a signal and fire an
+    interrupt when it received one. This would make the care very responsive to user controls.
+
+    It would definitely need to initialize a stack and enable interrupts, just like the mega128.
+
+\end{enumerate}
+\end{document}
