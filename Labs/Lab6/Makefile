@@ -7,19 +7,24 @@ prelab:
 
 FILE_MASTER="ece375-L6_MASTER"
 FILE_SLAVE="ece375-L6_SLAVE"
-build:
+mbuild:
 	../../avra-1.3.0/src/avra $(FILE_MASTER).asm
-	../../avra-1.3.0/src/avra $(FILE_SLAVE).asm
 	rm $(FILE_MASTER).obj
 	rm $(FILE_MASTER).cof
 	rm $(FILE_MASTER).eep.hex
+
+sbuild:
+	../../avra-1.3.0/src/avra $(FILE_SLAVE).asm
 	rm $(FILE_SLAVE).obj
 	rm $(FILE_SLAVE).cof
 	rm $(FILE_SLAVE).eep.hex
 
-install:
+minstall: mbuild
 	/usr/local/bin/avrdude -c osuisp2 -P /dev/usb/hiddev0 -p m128 -e -U flash:w:$(FILE_MASTER).hex -v
+sinstall: sbuild
 	/usr/local/bin/avrdude -c osuisp2 -P /dev/usb/hiddev1 -p m128 -e -U flash:w:$(FILE_SLAVE).hex -v
+
+all: minstall sinstall
 
 clean:
 	rm *.hex

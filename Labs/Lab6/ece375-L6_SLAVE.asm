@@ -19,12 +19,18 @@
 ;*	Internal Register Definitions and Constants
 ;***********************************************************
 .def	mpr = r16				; Multi-Purpose Register
-.def	rec = r22				; Multi-Purpose Register
 .def	waitcnt = r21				; Wait Loop Counter
+.def	rec = r22				; What we received Register
+.def	tmp = r23				; What we received Register
+.def	cmd = r24				; What we received Register
+.def	state = r23				; State register.
 .def	ilcnt = r18				; Inner Loop Counter
 .def	olcnt = r19				; Outer Loop Counter
 
 .equ	WTime = 50				; Time to wait in wait loop
+.equ    FROZEN = 0b01010101
+.equ    FREEZE = 0b11111000
+
 
 .equ	WskrR = 0				; Right Whisker Input Bit
 .equ	WskrL = 1				; Left Whisker Input Bit
@@ -34,6 +40,7 @@
 .equ	EngDirL = 6				; Left Engine Direction Bit
 
 ;.equ	BotID = ;(Enter you group ID here (8bits)); Unique XD ID (MSB = 0)
+.equ	BotID = 0b00010001;(Enter you group ID here (8bits)); Unique XD ID (MSB = 0)
 
 ;/////////////////////////////////////////////////////////////
 ;These macros are the values to make the TekBot Move.
@@ -127,15 +134,10 @@ USART_INIT:
 ;-----------------------------------------------------------
 ; Main Program
 ;-----------------------------------------------------------
-        ldi     mpr, $00
+        ldi     mpr, $01
+        ldi     state, $00
 MAIN:
-        ;ldi     r20, $01
-        ;add     mpr, r20
-
-        ;call USART_Transmit
-        ;ldi     waitcnt, WTime  ; Wait for 1 second
-        ;rcall   Wait            ; Call wait function
-
+        out PORTB, cmd
 		rjmp	MAIN
 
 
@@ -143,6 +145,14 @@ MAIN:
 ;*	Functions and Subroutines
 ;***********************************************************
 ; USART Receive
+; Set state to 0
+; Listen
+;   if received and state = 0 # Check for botid
+;       if received == BotId
+;            state = 1
+;   if received and state = 1 # Accept commands
+;       write received as command # Write to LEDs
+;       state = 0
 USART_Receive:
     ; Wait for data to be received
     lds rec, UCSR1A
@@ -151,7 +161,24 @@ USART_Receive:
 
     ; Get and return receive data from receive buffer
     lds rec, UDR1
-    out PORTB, rec
+    ; Data is now in rec
+
+    cpi   state, $00
+    breq  GO_STATE1
+    cpi   state, $01
+    breq  COMMAND
+    ret
+
+GO_STATE1:
+    cpi  rec, BotID
+    breq  MY_ID
+    ret ; It wasn't our ID. Ignore it.
+MY_ID:
+    ldi   state, $01
+    ret
+COMMAND:
+    mov cmd, rec
+    ldi   state, $00
     ret
 
 USART_Transmit:
