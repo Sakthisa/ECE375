@@ -23,7 +23,7 @@
 .def    waitcnt = r17               ; Wait Loop Counter
 .def    ilcnt = r18             ; Inner Loop Counter
 .def    olcnt = r19             ; Outer Loop Counter
-.def    tmp = r30
+.def    tmp = r20
 .def	rec = r22				; Multi-Purpose Register
 
 
@@ -152,7 +152,7 @@ MAIN:
 
         in    mpr, PIND       ; Get whisker input from Port D
         cpi   mpr, FREEZE
-        breq   FREEZE
+        breq   SENDFREEZE
 
         in    mpr, PIND       ; Get whisker input from Port D
         cpi   mpr, B3
@@ -165,7 +165,8 @@ MAIN:
 
         in    mpr, PIND       ; Get whisker input from Port D
         cpi   mpr, B5
-        breq   BUTTON5
+        ;breq   BUTTON5
+        breq   SENDFREEZE
 
         in    mpr, PIND       ; Get whisker input from Port D
         cpi   mpr, B6
@@ -195,7 +196,7 @@ BUTTON1:
         out PORTB, mpr
         call USART_Transmit
         jmp MAIN
-FREEZE:
+SENDFREEZE:
         ; Load bot id
         ldi mpr, BotID
         ; Send bot id
@@ -248,16 +249,16 @@ BUTTON6:
 
 
         ; Load bot id
-        ldi mpr, BotID
+        ;ldi mpr, BotID
         ; Send bot id
-        call USART_Transmit
+        ;call USART_Transmit
 
         ; Load tmp + 1
-        adiw tmp, $1
-        mov mpr, tmp
+        ;adiw tmp, $1
+        ;mov mpr, tmp
         ; Send bot id
-        call USART_Transmit
-        out  PORTB, tmp
+        ;call USART_Transmit
+        ;out  PORTB, tmp
 
         ldi waitcnt, WTime ; Wait for 1 second
 ; -------------------------------

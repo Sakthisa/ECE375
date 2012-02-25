@@ -19,9 +19,10 @@
 ;*	Internal Register Definitions and Constants
 ;***********************************************************
 .def	mpr = r16				; Multi-Purpose Register
+.def	numFrozen = r17				; Multi-Purpose Register
 .def	waitcnt = r21				; Wait Loop Counter
 .def	rec = r22				; What we received Register
-.def	tmp = r23				; What we received Register
+.def	tmp = r20				; What we received Register
 .def	cmd = r24				; What we received Register
 .def	state = r23				; State register.
 .def	ilcnt = r18				; Inner Loop Counter
@@ -136,6 +137,8 @@ USART_INIT:
 ;-----------------------------------------------------------
         ldi     mpr, $01
         ldi     state, $00
+        clr     numFrozen
+        clr     cmd
 MAIN:
         out PORTB, cmd
 		rjmp	MAIN
@@ -162,14 +165,45 @@ USART_Receive:
     ; Get and return receive data from receive buffer
     lds rec, UDR1
     ; Data is now in rec
-
+    ; if rec == FROZEN:
+    ;   wait n
+    ;   numFrozen++
+    ;   if numFrozen == 3:
+    ;      STUCK  rjmp STUCK
+    ;   ret
+    ; if state == 0:
+    ;   if rec == BotID:
+    ;       state = 1
+    ;       ret
+    ; if state == 1:
+    ;   cmd = rec
+    ;   mov cmd, rec // Do the command
+    ; ============= The Actual Code =============
+    ; if rec == FROZEN:
+    cpi   rec, FROZEN
+    breq  DO_FROZEN
+    ; if state == 0:
     cpi   state, $00
-    breq  GO_STATE1
+    breq  GO_STATE0
+    ; if state == 1:
     cpi   state, $01
     breq  COMMAND
     ret
 
-GO_STATE1:
+DO_FROZEN:
+    ;   wait n
+    ldi waitcnt, WTime ; Wait for 1 second
+    call Wait
+    inc numFrozen
+    cpi    numFrozen, $03
+    breq LOOP_FOREVER
+    ret
+LOOP_FOREVER:
+    ldi mpr, FROZEN
+    out PORTB, mpr
+    rjmp LOOP_FOREVER
+
+GO_STATE0:
     cpi  rec, BotID
     breq  MY_ID
     ret ; It wasn't our ID. Ignore it.
