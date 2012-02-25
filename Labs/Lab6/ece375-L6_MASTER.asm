@@ -31,12 +31,12 @@
 
 .equ	B0 = 0b11111110				; Right Whisker Input Bit
 .equ	B1 = 0b11111101
-.equ	FROZEN = 0b01010101
-.equ	FREEZE = 0b11111000
+.equ	B2 = 0b01010101
 .equ	B3 = 0b11110111
 .equ	B4 = 0b11101111
 .equ	B5 = 0b11011111
 .equ	B6 = 0b10111111
+.equ	FREEZE = 0b11111000
 
 .equ	WskrR = 0				; Right Whisker Input Bit
 .equ	WskrL = 1				; Left Whisker Input Bit
@@ -46,7 +46,7 @@
 .equ	EngDirL = 6				; Left Engine Direction Bit
 
 ;.equ	BotID = ;(Enter you group ID here (8bits)); Unique XD ID (MSB = 0)
-.equ	BotID = 0b00010001 ;(Enter you group ID here (8bits)); Unique XD ID (MSB = 0)
+.equ	BotID = 0b11111111 ;(Enter you group ID here (8bits)); Unique XD ID (MSB = 0)
 
 ;/////////////////////////////////////////////////////////////
 ;These macros are the values to make the TekBot Move.
@@ -151,29 +151,31 @@ MAIN:
         breq   BUTTON1
 
         in    mpr, PIND       ; Get whisker input from Port D
-        cpi   mpr, FREEZE
-        breq   SENDFREEZE
-
-        in    mpr, PIND       ; Get whisker input from Port D
-        cpi   mpr, B3
-        breq   BUTTON3
-
-        in    mpr, PIND       ; Get whisker input from Port D
-        cpi   mpr, B4
-        breq   BUTTON4
-
-
-        in    mpr, PIND       ; Get whisker input from Port D
         cpi   mpr, B5
-        ;breq   BUTTON5
-        breq   SENDFREEZE
+        breq   SENDFREEZE  ; Button 5
 
-        in    mpr, PIND       ; Get whisker input from Port D
-        cpi   mpr, B6
-        breq   BUTTON6
+        ; Clear lds
+        clr mpr
+        out PORTB, mpr
 
         rjmp MAIN
 
+        ;in    mpr, PIND       ; Get whisker input from Port D
+        ;cpi   mpr, B2
+        ;breq   BUTTON2
+
+        ;in    mpr, PIND       ; Get whisker input from Port D
+        ;cpi   mpr, B3
+        ;breq   BUTTON3
+
+        ;in    mpr, PIND       ; Get whisker input from Port D
+        ;cpi   mpr, B4
+        ;breq   BUTTON4
+
+
+
+        ;in    mpr, PIND       ; Get whisker input from Port D
+        ;cpi   mpr, B6
 
 
 BUTTON0:
@@ -206,46 +208,46 @@ SENDFREEZE:
         out PORTB, mpr
         call USART_Transmit
         jmp MAIN
-BUTTON3:
+BUTTON2:
         ; Load bot id
-        ldi mpr, BotID
+        ;ldi mpr, BotID
         ; Send bot id
-        call USART_Transmit
+        ;call USART_Transmit
 
-        ldi   mpr, 0b00001000
-        out PORTB, mpr
-        call USART_Transmit
-        jmp MAIN
-BUTTON4:
+        ;ldi   mpr, 0b00000100
+        ;out PORTB, mpr
+        ;call USART_Transmit
+        ;jmp MAIN
+;BUTTON4:
         ; Load bot id
-        ldi mpr, BotID
+        ;ldi mpr, BotID
         ; Send bot id
-        call USART_Transmit
+        ;call USART_Transmit
 
-        ldi   mpr, 0b00010000
-        out PORTB, mpr
-        call USART_Transmit
-        jmp MAIN
-BUTTON5:
+        ;ldi   mpr, 0b00010000
+        ;out PORTB, mpr
+        ;call USART_Transmit
+        ;jmp MAIN
+;BUTTON5:
         ; Load bot id
-        ldi mpr, BotID
+        ;ldi mpr, BotID
         ; Send bot id
-        call USART_Transmit
+        ;call USART_Transmit
 
-        ldi   mpr, 0b00100000
-        out PORTB, mpr
-        call USART_Transmit
-        jmp MAIN
-BUTTON6:
+        ;ldi   mpr, 0b00100000
+        ;out PORTB, mpr
+        ;call USART_Transmit
+        ;jmp MAIN
+;BUTTON6:
         ; Load bot id
-        ldi mpr, BotID
+        ;ldi mpr, BotID
         ; Send bot id
-        call USART_Transmit
+        ;call USART_Transmit
 
-        ldi   mpr, 0b01000000
-        out PORTB, mpr
-        call USART_Transmit
-        rjmp MAIN
+        ;ldi   mpr, 0b01000000
+        ;out PORTB, mpr
+        ;call USART_Transmit
+        ;rjmp MAIN
 
 
         ; Load bot id

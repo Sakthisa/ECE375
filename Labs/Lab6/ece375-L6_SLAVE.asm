@@ -28,7 +28,7 @@
 .def	ilcnt = r18				; Inner Loop Counter
 .def	olcnt = r19				; Outer Loop Counter
 
-.equ	WTime = 50				; Time to wait in wait loop
+.equ	WTime = 100				; Time to wait in wait loop
 .equ    FROZEN = 0b01010101
 .equ    FREEZE = 0b11111000
 
@@ -41,7 +41,7 @@
 .equ	EngDirL = 6				; Left Engine Direction Bit
 
 ;.equ	BotID = ;(Enter you group ID here (8bits)); Unique XD ID (MSB = 0)
-.equ	BotID = 0b00010001;(Enter you group ID here (8bits)); Unique XD ID (MSB = 0)
+.equ	BotID = 0b01111111;(Enter you group ID here (8bits)); Unique XD ID (MSB = 0)
 
 ;/////////////////////////////////////////////////////////////
 ;These macros are the values to make the TekBot Move.
@@ -141,7 +141,13 @@ USART_INIT:
         clr     cmd
 MAIN:
         out PORTB, cmd
+        ldi waitcnt, 20 ; Wait for 1 second
+        call Wait
+        clr cmd
+        out PORTB, cmd
+
 		rjmp	MAIN
+
 
 
 ;***********************************************************
@@ -180,6 +186,7 @@ USART_Receive:
     ;   mov cmd, rec // Do the command
     ; ============= The Actual Code =============
     ; if rec == FROZEN:
+
     cpi   rec, FROZEN
     breq  DO_FROZEN
     ; if state == 0:
@@ -192,15 +199,22 @@ USART_Receive:
 
 DO_FROZEN:
     ;   wait n
-    ldi waitcnt, WTime ; Wait for 1 second
+    out PORTB, rec
+    ldi mpr, FROZEN
+    out PORTB, mpr
+    ldi waitcnt, 500 ; Wait for 1 second
     call Wait
+    clr mpr
+    out PORTB, mpr
     inc numFrozen
     cpi    numFrozen, $03
     breq LOOP_FOREVER
     ret
 LOOP_FOREVER:
-    ldi mpr, FROZEN
+    inc mpr
     out PORTB, mpr
+    ldi waitcnt, 20; Wait
+    call Wait
     rjmp LOOP_FOREVER
 
 GO_STATE0:
@@ -211,20 +225,29 @@ MY_ID:
     ldi   state, $01
     ret
 COMMAND:
-    mov cmd, rec
-    ldi   state, $00
+    ldi state, $00
+    cpi rec, FREEZE
+    breq DO_FREEZE
+    out PORTB, rec
+    ret
+DO_FREEZE:
+    ldi  mpr, FROZEN
+    call USART_Transmit
     ret
 
 USART_Transmit:
-    lds r23, UCSR1A
-    sbrs r23, UDRE1
+    cli ; Disable all interrupts
+    lds tmp, UCSR1A
+    sbrs tmp, UDRE1
     ; Load status of USART1
     ; Loop until transmit data buffer is ready
     rjmp USART_Transmit
-
     ; Send data
     sts UDR1, mpr
     ; Move data to transmit data buffer
+    ldi waitcnt, 20 ; Wait for 1 second
+    call Wait
+    sei
     ret
 
 
