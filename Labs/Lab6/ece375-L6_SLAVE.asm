@@ -23,6 +23,7 @@
 .def	waitcnt = r21				; Wait Loop Counter
 .def	rec = r22				; What we received Register
 .def	tmp = r20				; What we received Register
+.def	tmp2 = r25				; What we received Register
 .def	cmd = r24				; What we received Register
 .def	state = r23				; State register.
 .def	ilcnt = r18				; Inner Loop Counter
@@ -64,25 +65,26 @@
 .org	$0000					; Beginning of IVs
 		rjmp 	INIT			; Reset interrupt
 
+;- Right wisker
 ; Reset interrupt
 .org $0004
 rcall HitRight ; Call hit right function
 reti
 
+;- Left wisker
 ; Return from interrupt
-.org $0006
+.org $0002
 rcall HitLeft ; Call hit left function
 reti
 
 ;Should have Interrupt vectors for:
 .org    $003C
-    rcall USART_Receive
-    reti
-;- Left wisker
-;- Right wisker
+rcall USART_Receive
+reti
 ;- USART receive
 
 
+.org	$0046				; End of Interrupt Vectors
 ;-----------------------------------------------------------
 ; Program Initialization
 ;-----------------------------------------------------------
@@ -134,6 +136,14 @@ USART_INIT:
 
 		;Enable receiver and enable receive interrupts
 		;Set the External Interrupt Mask
+        ; Set INT4 & 5 to trigger on falling edge
+        ldi mpr, $00
+        sts EICRA, mpr
+
+        ; Use sts, EICRA in extended I/O space
+        ; Set the External Interrupt Mask
+        ldi mpr, (1 <<INT2)|(1 <<INT1)|(1 <<INT0)
+        out EIMSK, mpr
 
         ; Set the Interrupt Sense Control to falling edge
         ldi mpr, (1 <<ISC41)|(0 <<ISC40)|(1 <<ISC51)|(0 <<ISC50)
@@ -150,8 +160,9 @@ USART_INIT:
         clr     numFrozen
         clr     cmd
 MAIN:
+        clr cmd
         out PORTB, cmd
-        ldi waitcnt, 20 ; Wait for 1 second
+        ldi waitcnt, 10 ; Wait for 1 second
         call Wait
         clr cmd
         out PORTB, cmd
@@ -246,7 +257,6 @@ DO_FREEZE:
     ret
 
 USART_Transmit:
-    cli ; Disable all interrupts
     lds tmp, UCSR1A
     sbrs tmp, UDRE1
     ; Load status of USART1
@@ -255,9 +265,8 @@ USART_Transmit:
     ; Send data
     sts UDR1, mpr
     ; Move data to transmit data buffer
-    ldi waitcnt, 20 ; Wait for 1 second
-    call Wait
-    sei
+    ;ldi waitcnt, 20 ; Wait for 1 second
+    ;call Wait
     ret
 
 
@@ -307,37 +316,37 @@ HitRight:
 		ret				; Return from subroutine
 
 ;----------------------------------------------------------------
-; Sub:	HitLeft
-; Desc:	Handles functionality of the TekBot when the left whisker
-;		is triggered.
+; Sub:  HitLeft
+; Desc: Handles functionality of the TekBot when the left whisker
+;       is triggered.
 ;----------------------------------------------------------------
 HitLeft:
-		push	mpr			; Save mpr register
-		push	waitcnt			; Save wait register
-		in		mpr, SREG	; Save program state
-		push	mpr			;
+        push    mpr         ; Save mpr register
+        push    waitcnt     ; Save wait register
+        in      mpr, SREG   ; Save program state
+        push    mpr         ;
 
-		; Move Backwards for a second
-		ldi		mpr, MovBck	; Load Move Backwards command
-		out		PORTB, mpr	; Send command to port
-		ldi		waitcnt, WTime	; Wait for 1 second
-		rcall	Wait			; Call wait function
+        ; Move Backwards for a second
+        ldi     mpr, MovBck ; Load Move Backwards command
+        out     PORTB, mpr  ; Send command to port
+        ldi     waitcnt, WTime  ; Wait for 1 second
+        rcall   Wait            ; Call wait function
 
-		; Turn right for a second
-		ldi		mpr, TurnR	; Load Turn Left Command
-		out		PORTB, mpr	; Send command to port
-		ldi		waitcnt, WTime	; Wait for 1 second
-		rcall	Wait			; Call wait function
+        ; Turn right for a second
+        ldi     mpr, TurnR  ; Load Turn Left Command
+        out     PORTB, mpr  ; Send command to port
+        ldi     waitcnt, WTime  ; Wait for 1 second
+        rcall   Wait            ; Call wait function
 
-		; Move Forward again	
-		ldi		mpr, MovFwd	; Load Move Forwards command
-		out		PORTB, mpr	; Send command to port
+        ; Move Forward again    
+        ldi     mpr, MovFwd ; Load Move Forwards command
+        out     PORTB, mpr  ; Send command to port
 
-		pop		mpr		; Restore program state
-		out		SREG, mpr	;
-		pop		waitcnt		; Restore wait register
-		pop		mpr		; Restore mpr
-		ret				; Return from subroutine
+        pop     mpr     ; Restore program state
+        ;out     SREG, mpr   ;
+        pop     waitcnt     ; Restore wait register
+        pop     mpr     ; Restore mpr
+        ret             ; Return from subroutine
 
 ;----------------------------------------------------------------
 ; Sub:	Wait
