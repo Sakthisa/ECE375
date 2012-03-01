@@ -1,0 +1,103 @@
+% template created by: Russell Haering. arr. Joseph Crop
+\documentclass[12pt]{article}
+\usepackage[hmargin=1in, vmargin=1in]{geometry}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\usepackage[hang,small]{caption}
+\usepackage{lastpage}
+\usepackage{graphicx}
+\usepackage{verbatim}
+\DeclareGraphicsExtensions{.jpg}
+\usepackage{url}
+
+\def\author{Jacques Uber}
+\def\title{Lab7 Pre-Lab Questions}
+\def\date{\today}
+
+\fancyhf{} % clear all header and footer fields
+\fancyhead[LO]{\author}
+\fancyhead[RO]{\date}
+% The weird spacing here is to get the spacing of \thepage to be right.
+\fancyfoot[C]{\thepage\
+                    / 7}
+
+                    \setcounter{secnumdepth}{0}
+                    \setlength{\parindent}{0pt}
+                    \setlength{\parskip}{4mm}
+                    \linespread{1.4}
+
+
+\begin{document}
+\fancyhf{} % clear all header and footer fields
+\fancyhead[LO]{\author}
+\fancyhead[RO]{\date}
+\fancyhead[CO]{\title}
+
+
+
+\section{Pre-Lab}
+Pseudo Code
+
+\subsection{Master Code}
+\begin{verbatim}
+
+While true:
+    user_input = PIND
+    if user_input == start_game:
+        call play_game
+
+play_game:
+    send start_game_code
+    enable receive_interrupt # We will have the interrupt determine
+                             # who sent the signal.
+    while number_of_moves_received < number_of_players:
+        continue
+    call calculate_score
+    ret
+
+calculate_score:
+    max = 0
+    winner = 0
+    for score, player in player_scores:
+        if score > max:
+            winner = player
+            max = score
+
+    send winner
+    send max
+    ret
+
+\end{verbatim}
+\subsection{Slave Code}
+\begin{verbatim}
+
+While true:
+    receive = (Read USART Receive) # Busy wait
+    if receive == game_start:
+        call play_game
+        call receive_results
+
+play_game:
+    while True:
+        choice = PIND #User input
+        move = 0
+        if choice == increment_button:
+            move++
+        if choice == send_move:
+            call send_move
+            ret
+
+send_move:
+    send move
+    ret
+
+calculate_score:
+    send results
+    ret
+
+receive_results:
+    winner = receive_from_master (checking BotID)
+    print winner to LCD
+\end{verbatim}
+
+\end{document}
