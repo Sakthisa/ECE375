@@ -64,6 +64,16 @@
 .org	$0000					; Beginning of IVs
 		rjmp 	INIT			; Reset interrupt
 
+; Reset interrupt
+.org $0004
+rcall HitRight ; Call hit right function
+reti
+
+; Return from interrupt
+.org $0006
+rcall HitLeft ; Call hit left function
+reti
+
 ;Should have Interrupt vectors for:
 .org    $003C
     rcall USART_Receive
@@ -207,7 +217,7 @@ DO_FROZEN:
     clr mpr
     out PORTB, mpr
     inc numFrozen
-    cpi    numFrozen, $03
+    cpi    numFrozen, 5
     breq LOOP_FOREVER
     ret
 LOOP_FOREVER:
@@ -263,6 +273,71 @@ USART_Transmit:
 ;***********************************************************
 ;*	Additional Program Includes
 ;***********************************************************
+;----------------------------------------------------------------
+; Sub:	HitRight
+; Desc:	Handles functionality of the TekBot when the right whisker
+;		is triggered.
+;----------------------------------------------------------------
+HitRight:
+		push	mpr			; Save mpr register
+		push	waitcnt			; Save wait register
+		in		mpr, SREG	; Save program state
+		push	mpr			;
+
+		; Move Backwards for a second
+		ldi		mpr, MovBck	; Load Move Backwards command
+		out		PORTB, mpr	; Send command to port
+		ldi		waitcnt, WTime	; Wait for 1 second
+		rcall	Wait			; Call wait function
+
+		; Turn left for a second
+		ldi		mpr, TurnL	; Load Turn Left Command
+		out		PORTB, mpr	; Send command to port
+		ldi		waitcnt, WTime	; Wait for 1 second
+		rcall	Wait			; Call wait function
+
+		; Move Forward again
+		ldi		mpr, MovFwd	; Load Move Forwards command
+		out		PORTB, mpr	; Send command to port
+
+		pop		mpr		; Restore program state
+		out		SREG, mpr	;
+		pop		waitcnt		; Restore wait register
+		pop		mpr		; Restore mpr
+		ret				; Return from subroutine
+
+;----------------------------------------------------------------
+; Sub:	HitLeft
+; Desc:	Handles functionality of the TekBot when the left whisker
+;		is triggered.
+;----------------------------------------------------------------
+HitLeft:
+		push	mpr			; Save mpr register
+		push	waitcnt			; Save wait register
+		in		mpr, SREG	; Save program state
+		push	mpr			;
+
+		; Move Backwards for a second
+		ldi		mpr, MovBck	; Load Move Backwards command
+		out		PORTB, mpr	; Send command to port
+		ldi		waitcnt, WTime	; Wait for 1 second
+		rcall	Wait			; Call wait function
+
+		; Turn right for a second
+		ldi		mpr, TurnR	; Load Turn Left Command
+		out		PORTB, mpr	; Send command to port
+		ldi		waitcnt, WTime	; Wait for 1 second
+		rcall	Wait			; Call wait function
+
+		; Move Forward again	
+		ldi		mpr, MovFwd	; Load Move Forwards command
+		out		PORTB, mpr	; Send command to port
+
+		pop		mpr		; Restore program state
+		out		SREG, mpr	;
+		pop		waitcnt		; Restore wait register
+		pop		mpr		; Restore mpr
+		ret				; Return from subroutine
 
 ;----------------------------------------------------------------
 ; Sub:	Wait

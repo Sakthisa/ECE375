@@ -31,11 +31,12 @@
 
 .equ	B0 = 0b11111110				; Right Whisker Input Bit
 .equ	B1 = 0b11111101
-.equ	B2 = 0b01010101
+.equ	B2 = 0b11111011
 .equ	B3 = 0b11110111
 .equ	B4 = 0b11101111
 .equ	B5 = 0b11011111
 .equ	B6 = 0b10111111
+.equ	B7 = 0b01111111
 .equ	FREEZE = 0b11111000
 
 .equ	WskrR = 0				; Right Whisker Input Bit
@@ -46,7 +47,7 @@
 .equ	EngDirL = 6				; Left Engine Direction Bit
 
 ;.equ	BotID = ;(Enter you group ID here (8bits)); Unique XD ID (MSB = 0)
-.equ	BotID = 0b11111111 ;(Enter you group ID here (8bits)); Unique XD ID (MSB = 0)
+.equ	BotID = 0b01111111 ;(Enter you group ID here (8bits)); Unique XD ID (MSB = 0)
 
 ;/////////////////////////////////////////////////////////////
 ;These macros are the values to make the TekBot Move.
@@ -140,19 +141,47 @@ USART_INIT:
 ;-----------------------------------------------------------
 ; Main Program
 ;-----------------------------------------------------------
+        ldi   tmp, $00
 MAIN:
+        ; Clear lds
+        clr mpr
+        out PORTB, mpr
+
         ldi   mpr, $00
+
         in    mpr, PIND       ; Get whisker input from Port D
         cpi   mpr, B0
-        breq   BUTTON0
+        breq   BUTTON0        ; Left
 
         in    mpr, PIND       ; Get whisker input from Port D
         cpi   mpr, B1
-        breq   BUTTON1
+        breq   BUTTON1        ; Right
 
         in    mpr, PIND       ; Get whisker input from Port D
         cpi   mpr, B5
         breq   SENDFREEZE  ; Button 5
+
+
+
+        ;in    mpr, PIND       ; Get whisker input from Port D
+        ;cpi   mpr, B2
+        ;breq   BUTTON2        ; Forward
+
+        ;in    mpr, PIND       ; Get whisker input from Port D
+        ;cpi   mpr, B3
+        ;breq   BUTTON3        ; Backward
+
+        in    mpr, PIND       ; Get whisker input from Port D
+        cpi   mpr, B4
+        breq   BUTTON4        ; Halt
+
+        in    mpr, PIND       ; Get whisker input from Port D
+        cpi   mpr, B6
+        breq   BUTTON6        ; Halt
+
+        in    mpr, PIND       ; Get whisker input from Port D
+        cpi   mpr, B7
+        breq   BUTTON7        ; Halt
 
         ; Clear lds
         clr mpr
@@ -160,25 +189,12 @@ MAIN:
 
         rjmp MAIN
 
-        ;in    mpr, PIND       ; Get whisker input from Port D
-        ;cpi   mpr, B2
-        ;breq   BUTTON2
-
-        ;in    mpr, PIND       ; Get whisker input from Port D
-        ;cpi   mpr, B3
-        ;breq   BUTTON3
-
-        ;in    mpr, PIND       ; Get whisker input from Port D
-        ;cpi   mpr, B4
-        ;breq   BUTTON4
-
-
 
         ;in    mpr, PIND       ; Get whisker input from Port D
         ;cpi   mpr, B6
 
 
-BUTTON0:
+BUTTON0: ;Left
         ; Load bot id
         ldi mpr, BotID
         ; Send bot id
@@ -188,7 +204,7 @@ BUTTON0:
         out PORTB, mpr
         call USART_Transmit
         jmp MAIN
-BUTTON1:
+BUTTON1: ;Right
         ; Load bot id
         ldi mpr, BotID
         ; Send bot id
@@ -198,7 +214,7 @@ BUTTON1:
         out PORTB, mpr
         call USART_Transmit
         jmp MAIN
-SENDFREEZE:
+SENDFREEZE: ;Freeze
         ; Load bot id
         ldi mpr, BotID
         ; Send bot id
@@ -210,77 +226,47 @@ SENDFREEZE:
         jmp MAIN
 BUTTON2:
         ; Load bot id
-        ;ldi mpr, BotID
+        ldi mpr, BotID
         ; Send bot id
-        ;call USART_Transmit
+        call USART_Transmit
 
-        ;ldi   mpr, 0b00000100
-        ;out PORTB, mpr
-        ;call USART_Transmit
-        ;jmp MAIN
-;BUTTON4:
+        ldi   mpr, 0b00000101
+        out PORTB, mpr
+        call USART_Transmit
+        jmp MAIN
+BUTTON4: ;Forward
         ; Load bot id
-        ;ldi mpr, BotID
+        ldi mpr, BotID
         ; Send bot id
-        ;call USART_Transmit
+        call USART_Transmit
 
-        ;ldi   mpr, 0b00010000
-        ;out PORTB, mpr
-        ;call USART_Transmit
-        ;jmp MAIN
-;BUTTON5:
+        ldi   mpr, MovFwd
+        out PORTB, mpr
+        call USART_Transmit
+        jmp MAIN
+
+BUTTON6: ;Backward
         ; Load bot id
-        ;ldi mpr, BotID
+        ldi mpr, BotID
         ; Send bot id
-        ;call USART_Transmit
+        call USART_Transmit
 
-        ;ldi   mpr, 0b00100000
-        ;out PORTB, mpr
-        ;call USART_Transmit
-        ;jmp MAIN
-;BUTTON6:
+        ldi   mpr, MovBck
+        out PORTB, mpr
+        call USART_Transmit
+        jmp MAIN
+
+BUTTON7: ;Halt
         ; Load bot id
-        ;ldi mpr, BotID
+        ldi mpr, BotID
         ; Send bot id
-        ;call USART_Transmit
+        call USART_Transmit
 
-        ;ldi   mpr, 0b01000000
-        ;out PORTB, mpr
-        ;call USART_Transmit
-        ;rjmp MAIN
+        ldi   mpr, Halt
+        out PORTB, mpr
+        call USART_Transmit
+        jmp MAIN
 
-
-        ; Load bot id
-        ;ldi mpr, BotID
-        ; Send bot id
-        ;call USART_Transmit
-
-        ; Load tmp + 1
-        ;adiw tmp, $1
-        ;mov mpr, tmp
-        ; Send bot id
-        ;call USART_Transmit
-        ;out  PORTB, tmp
-
-        ldi waitcnt, WTime ; Wait for 1 second
-; -------------------------------
-        push    waitcnt         ; Save wait register
-        push    ilcnt           ; Save ilcnt register
-        push    olcnt           ; Save olcnt register
-
-Loop1:   ldi     olcnt, 224      ; load olcnt register
-OLoop1:  ldi     ilcnt, 237      ; load ilcnt register
-ILoop1:  dec     ilcnt           ; decrement ilcnt
-        brne    ILoop1           ; Continue Inner Loop
-        dec     olcnt       ; decrement olcnt
-        brne    OLoop1           ; Continue Outer Loop
-        dec     waitcnt     ; Decrement wait
-        brne    Loop1            ; Continue Wait loop
-
-        pop     olcnt       ; Restore olcnt register
-        pop     ilcnt       ; Restore ilcnt register
-        pop     waitcnt     ; Restore wait register
-; -------------------------------
 
 rjmp MAIN
 
