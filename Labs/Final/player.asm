@@ -111,32 +111,6 @@ USART_INIT:
         call    SetHand
 
 MAIN:
-;        ldi     waitcount, 75
-;        call    Do_Wait
-;        call    Playing_LN1
-;        call    IncRound
-;        call    IncScore
-
-;        call    SetHand
-;        inc     mpr
-;        call    Playing_LN2
-;
-;        ldi     waitcount, 75
-;        call    Do_Wait
-;        call    PrintStay
-;
-;        ldi     waitcount, 75
-;        call    Do_Wait
-;        call    PrintWinRound
-;
-;        ldi     waitcount, 75
-;        call    Do_Wait
-;        call    PrintLooseRound
-;
-;        ldi     waitcount, 75
-;        call    Do_Wait
-;        call    PrintNewRound
-
 PLAY_GAME:
         call    Playing_LN1
         ldi     waitcount, 10   ; Refresh the LED
