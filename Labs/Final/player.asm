@@ -6,6 +6,7 @@
                                 ; State 2 = Player Has recieved either Win or
                                 ;           Loss GOTO state 0
 .def    rec = r6
+.def    tmp = r7
 .def	ReadCnt = r23			; Counter used to read data from Program Memory
 .equ	CountAddr = $0130		; Address of ASCII counter text
 .def	counter = r4			; Counter used for Bin2ASCII
@@ -14,15 +15,23 @@
 .equ	Score = $0202		    ; Address of Score Count
 .equ	Hand  = $0206		    ; Address of Hand Count
 
+
+.equ    BustVal = 71
 ; Controls
 .equ	BHit     = 0b11111110				; Right Whisker Input Bit
 .equ	BStay    = 0b11111101
-.equ    NewGame  = 0b00000111
-.equ    NewRound = 0b00011111
+
+.equ    NewGame  = 0b10000111
+.equ    NewRound = 0b10011111
 
 ;BotId
-.equ    BotID = 0b10101010
-.equ    WinID = 0b10101011
+.equ    BotID = 0b11101010
+.equ    WinID = 0b11101011
+
+; Random Number Stuff
+.equ    Seed  = $0208               ; Address of Random Seed
+.equ    rndmul = 0b01010111
+.equ    rndinc = 0b11010101
 
 
 
@@ -88,6 +97,11 @@ USART_INIT:
         ldi		XH, high(Score)
         ldi     mpr, 0 ; Initialize score
         st      X, mpr
+        ; Generate random seed.
+        ldi     mpr, 9
+        sts     Seed, mpr
+        lds     R0, Seed
+        clr     mpr
 
         ; Set state to 0
         ldi     mpr, 0
@@ -206,6 +220,21 @@ PrintStay:
         push count
 		ldi		ZL, low(SAY_STAY<<1); Init variable registers
 		ldi		ZH, high(SAY_STAY<<1)
+		ldi		YL, low(LCDLn2Addr)
+		ldi		YH, high(LCDLn2Addr)
+		ldi		ReadCnt, LCDMaxCnt
+        rjmp    INIT_LINE2meta
+
+;----------------------------------------------------------------
+; Sub: PrintBust
+; Desc: Print winning message
+;----------------------------------------------------------------
+PrintBust:
+        push mpr
+        push line
+        push count
+		ldi		ZL, low(BUST_LINE<<1); Init variable registers
+		ldi		ZH, high(BUST_LINE<<1)
 		ldi		YL, low(LCDLn2Addr)
 		ldi		YH, high(LCDLn2Addr)
 		ldi		ReadCnt, LCDMaxCnt
@@ -375,10 +404,25 @@ LABEL1:	st		X+, mpr			; Clear data area
 DoHit:
     clr     mpr
     call    GetHand
-    inc     mpr
-    call    SetHand
+    mov     tmp, mpr ;tmp = hand
+    call    GetRand  ; mpr = Random number
+    add     mpr, tmp ; mpr = Hand + Random number
+    call    SetHand  ; Set hand Value
+    subi    mpr, BustVal ; Hand = Hand - 70
+    cpi     mpr, 0
+    brge    BUST    ; mpr > 0 ? Busted: Return
+    ; They didn't go over
     call    Playing_LN2
     ret
+BUST:
+    ; They busted
+    call PrintBust
+    ldi     waitcount, 200
+    call    Do_Wait
+
+    rjmp DoStay
+
+
 ;----------------------------------------------------------------
 ; Sub: DoStay
 ; Desc: The player wants to hit.
@@ -388,21 +432,21 @@ DoStay:
 
 
     ldi     mpr, 0
-    mov     game_state, mpr ;Go to state 0, waiting for reply
+    mov     game_state, mpr ; Go to state 0, waiting for reply
     ldi     mpr, BotId
-    call    USART_Transmit ; Send BotId
-    call    GetHand ; Stores hand into mpr
-    call    USART_Transmit ; Send Hand
+    call    USART_Transmit  ; Send BotId
+    call    GetHand         ; Stores hand into mpr
+    call    USART_Transmit  ; Send Hand
 
     ; Let the light fade
     ldi     waitcount, 10
     call    Do_Wait
     ldi     mpr, 1
-    mov     game_state, mpr ;Go to state 1, waiting for reply
+    mov     game_state, mpr ; Go to state 1, waiting for reply
 STATE1:
     mov     mpr, game_state
     cpi     mpr, 1
-    breq    STATE1       ; If we are in state 2 Go play game
+    breq    STATE1          ; If we are in state 2 Go play game
     ldi     mpr, 0
     mov     game_state, mpr
 
@@ -509,7 +553,7 @@ USART_Receive:
     cpi     mpr, NewGame     ;   if rec == NewGame
     breq    NEW_GAME
 
-    cpi     mpr, WinId      ;   if rec == WinId
+    cpi     mpr, WinId       ;   if rec == WinId
     breq    WIN_ROUND
 
     cpi     mpr, NewRound    ;   if rec == NewRound
@@ -568,6 +612,22 @@ USART_Transmit:
     pop waitcount
     ret
 ;----------------------------------------------------------------
+; Sub:	GetRand
+; Desc:	Generage a random number and store it in mpr
+;----------------------------------------------------------------
+GetRand:
+        ldi     mpr, rndmul
+        lds     R0, Seed
+        mul     R0, mpr
+        ldi     mpr, rndinc
+        add     R0, mpr
+        sts     Seed, R0
+        ldi     mpr, 0b00011101
+        and     R0, mpr
+        inc     R0      ;Should now have a random number from 1-30 in R0
+        mov     mpr, R0
+        ret
+;----------------------------------------------------------------
 ; Sub:	Wait
 ; Desc:	A wait loop that is 16 + 159975*waitcount cycles or roughly
 ;		waitcount*10ms.  Just initialize wait for the specific amount
@@ -599,6 +659,8 @@ WIN:
 .DB "  U WIN ROUND!  " ;
 LOSE:
 .DB " U NO WIN ROUND " ;
+BUST_LINE:
+.DB "   U WENT OVA   " ;
 NEW_ROUND:
 .DB "   NEW ROUND!   " ;
 SAY_STAY:
