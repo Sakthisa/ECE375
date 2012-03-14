@@ -1,5 +1,11 @@
 .include "m128def.inc"			; Include the ATMega128 Definition Doc
 .def	mpr = r16				; Multi-purpose register defined for LCDDV2
+.def	game_state = r5			; Game State
+                                ; State 0 = Player can hit or stay.
+                                ; State 1 = Player Has hit waiting for results.
+                                ; State 2 = Player Has recieved either Win or
+                                ;           Loss GOTO state 0
+.def    rec = r6
 .def	ReadCnt = r23			; Counter used to read data from Program Memory
 .equ	CountAddr = $0130		; Address of ASCII counter text
 .def	counter = r4			; Counter used for Bin2ASCII
@@ -9,8 +15,15 @@
 .equ	Hand  = $0206		    ; Address of Hand Count
 
 ; Controls
-.equ	BHit = 0b11111110				; Right Whisker Input Bit
-.equ	BStay = 0b11111101
+.equ	BHit     = 0b11111110				; Right Whisker Input Bit
+.equ	BStay    = 0b11111101
+.equ    NewGame  = 0b00000111
+.equ    NewRound = 0b00011111
+
+;BotId
+.equ    BotID = 0b10101010
+.equ    WinID = 0b10101011
+
 
 
 .cseg							; Beginning of code segment
@@ -20,6 +33,10 @@
 ;***********************************************************
 .org	$0000					; Beginning of IVs
 		rjmp INIT				; Reset interrupt
+
+.org    $003C
+rcall USART_Receive
+reti
 
 ;***********************************************************
 ;*	Program Initialization
@@ -38,6 +55,26 @@ INIT:							; Initialize Stack Pointer
         out     PORTD, mpr      ; with Tri-State
         ldi     mpr, $00        ; Set Port D Directional Register
         out     DDRD, mpr       ; for inputs
+USART_INIT:
+        ;Set double data rate
+        ldi r16, (1<<U2X1)
+        ; UCSR1A control register -- Bit 1 – U2Xn: Double the USART Transmission Speed
+        sts UCSR1A, r16
+
+        ;Set baudrate at 2400bps
+        ; UBRR1H Bod rate control register
+        ldi r16, high(832)
+        sts UBRR1H, r16
+        ldi r16, low(832)
+        sts UBRR1L, r16
+
+		;Set frame format: 8data bits, 2 stop bit
+        ldi r16, (0<<UMSEL1|1<<USBS1|1<<UCSZ11|1<<UCSZ10)
+        sts UCSR1C, r16
+
+        ;Enable both receiver and transmitter -- needed for Lab 2
+        ldi r16, (1<<RXCIE1|1<<RXEN1|1<<TXEN1) ; RXEN (Receiver enable) TXEN (Transmit enable)
+        sts UCSR1B, r16
 
 		; Activate interrupts
 		sei						; Turn on interrupts
@@ -52,14 +89,19 @@ INIT:							; Initialize Stack Pointer
         ldi     mpr, 0 ; Initialize score
         st      X, mpr
 
+        ; Set state to 0
+        ldi     mpr, 0
+        mov     game_state, mpr
+
         clr     mpr
         call    SetHand
+
 MAIN:
-        ldi     waitcount, 75
-        call    Do_Wait
-        call    Playing_LN1
-        call    IncRound
-        call    IncScore
+;        ldi     waitcount, 75
+;        call    Do_Wait
+;        call    Playing_LN1
+;        call    IncRound
+;        call    IncScore
 
 ;        call    SetHand
 ;        inc     mpr
@@ -82,6 +124,10 @@ MAIN:
 ;        call    PrintNewRound
 
 PLAY_GAME:
+        call    Playing_LN1
+        ldi     waitcount, 10   ; Refresh the LED
+        call    Do_Wait
+
         in      mpr, PIND       ; Get PIND
         cpi     mpr, BHit
         breq    PLAYER_HIT        ; Did the player hit?
@@ -338,8 +384,28 @@ DoHit:
 ; Desc: The player wants to hit.
 ;----------------------------------------------------------------
 DoStay:
-    call PrintStay
-NOTHING_YET: rjmp NOTHING_YET
+    call    PrintStay
+
+
+    ldi     mpr, 0
+    mov     game_state, mpr ;Go to state 0, waiting for reply
+    ldi     mpr, BotId
+    call    USART_Transmit ; Send BotId
+    call    GetHand ; Stores hand into mpr
+    call    USART_Transmit ; Send Hand
+
+    ; Let the light fade
+    ldi     waitcount, 10
+    call    Do_Wait
+    ldi     mpr, 1
+    mov     game_state, mpr ;Go to state 1, waiting for reply
+STATE1:
+    mov     mpr, game_state
+    cpi     mpr, 1
+    breq    STATE1       ; If we are in state 2 Go play game
+    ldi     mpr, 0
+    mov     game_state, mpr
+
     ret
 
 ;----------------------------------------------------------------
@@ -404,6 +470,103 @@ GetHand:
         pop XH
         pop XL
         ret
+;----------------------------------------------------------------
+; Sub: USART_Receive
+; Desc: Receive data over IR
+;       This is where checking to see if you won happens.
+;       if state != 1:
+;           ret
+;       if rec == NewGame
+;           call IncRound
+;           // Other stuff?
+;       if rec == NewRound
+;           call PrintLoose
+;           call IncRound
+;           Reset hand
+;           state = 2
+;       if rec == WinID
+;           call PrintWin
+;           call IncRound
+;           call IncScore
+;           Reset hand
+;           state = 2
+;----------------------------------------------------------------
+USART_Receive:
+    ; Wait for data to be received
+    lds mpr, UCSR1A
+    sbrs mpr, RXC1
+    rjmp USART_Receive
+
+    ; Get and return receive data from receive buffer
+    lds mpr, UDR1
+    ; mpr === rec
+
+    ldi     waitcount, 1
+    cp      waitcount, game_state
+    brne    DONE_REC
+
+
+    cpi     mpr, NewGame     ;   if rec == NewGame
+    breq    NEW_GAME
+
+    cpi     mpr, WinId      ;   if rec == WinId
+    breq    WIN_ROUND
+
+    cpi     mpr, NewRound    ;   if rec == NewRound
+    breq    NEXT_ROUND
+
+    rjmp DONE_REC            ; ???
+
+NEXT_ROUND:
+    call    PrintLooseRound  ; We lost
+    call    IncRound         ; Round = Round + 1
+    clr     mpr
+    call    SetHand          ; Reset Hand
+
+    ldi     mpr, 0
+    mov     game_state, mpr  ; Set game state to 0
+
+    call    PrintNewRound
+    ldi     waitcount, 150
+    call    Do_Wait
+    rjmp    DONE_REC
+WIN_ROUND:
+    call    PrintWinRound    ; We Won
+    call    IncRound         ; Round = Round + 1
+    clr     mpr
+    call    SetHand          ; Reset Hand
+
+    ldi     mpr, 0
+    mov     game_state, mpr  ; Set game state to 0
+
+    call    PrintNewRound
+    ldi     waitcount, 150
+    call    Do_Wait
+    rjmp    DONE_REC
+
+NEW_GAME:
+    rjmp    DONE_REC
+
+DONE_REC:
+    ret
+
+;----------------------------------------------------------------
+; Sub: USART_Transmit
+; Desc: Send data over IR
+;       Sends value found in mpr and then returns
+;----------------------------------------------------------------
+
+USART_Transmit:
+    push waitcount ; Use waitcount as garbage variable.
+    lds waitcount, UCSR1A
+    sbrs waitcount, UDRE1
+    ; Load status of USART1
+    ; Loop until transmit data buffer is ready
+    rjmp USART_Transmit
+    ; Send data
+    sts UDR1, mpr
+    pop waitcount
+    ret
 ;----------------------------------------------------------------
 ; Sub:	Wait
 ; Desc:	A wait loop that is 16 + 159975*waitcount cycles or roughly
