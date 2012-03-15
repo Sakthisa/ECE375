@@ -169,7 +169,6 @@ REC_SCORE: ; State is 1
     mov     best_botId, tmp_botid
     mov     best_score, rec
     clr     tmp_botid
-    dec     players_active
 
 STILL_BEST:
     clr     game_state
