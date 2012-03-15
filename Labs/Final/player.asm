@@ -402,9 +402,12 @@ BUST:
     call    USART_Transmit  ; Send Bust code
     call    PrintStay
     ldi     waitcount, 100
-    call    Do_Wait
     ldi     mpr, 1
     mov     game_state, mpr ; Go to state 1, waiting for reply
+
+    call    PrintBust
+    ldi     waitcount, 100
+    call    Do_Wait
 
     rjmp STATE1
 
