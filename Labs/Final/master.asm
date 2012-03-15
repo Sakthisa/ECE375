@@ -160,7 +160,7 @@ REC_SCORE: ; State is 1
     pop mpr       ; Get what we originally received
     ; Update best score
     mov     best_botId, tmp_botid
-    mov     best_score, mpr
+    mov     best_score, rec
     clr     tmp_botid
     dec     players_active
 
