@@ -151,11 +151,11 @@ REC_BOTID: ; State is 0
 REC_SCORE: ; State is 1
     push    mpr             ; Save mpr
     mov     mpr, best_score
-    sub     rec, mpr        ; 0 =< |rec (recieved) - mpr (best_score) | =< 71
-            ; If rec > mpr Then After sub mpr > 0   recieved is the better score
-            ; If rec < mpr Then After sub mpr < 0   best_score is still best score
+    sub     mpr, rec        ; 0 =< |rec (recieved) - mpr (best_score) | =< 71
+            ; If mpr > rec Then After sub mpr > 0   recieved is the better score
+            ; If mpr < rec Then After sub mpr < 0   best_score is still best score
     cpi     mpr, 0
-    brlt    STILL_BEST ; TODO, is this right?
+    brgt    STILL_BEST ; TODO, is this right?
 
     pop mpr       ; Get what we originally received
     ; Update best score
