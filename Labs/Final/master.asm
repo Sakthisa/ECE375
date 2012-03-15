@@ -152,12 +152,15 @@ USART_Receive:
     breq    REC_BOTID  ; jump to State 0
     rjmp    REC_SCORE  ; Goto to State 1
 REC_BOTID: ; State is 0
+    ldi     mpr, 16
+    out     PORTB, mpr
     mov     tmp_botid, rec ; tmp_botid not has BotId
     inc     game_state ; set state to 1
     rjmp    DONE_Rec
 
 REC_SCORE: ; State is 1
-    push    mpr             ; Save mpr
+    ldi     mpr, 1
+    out     PORTB, mpr
     mov     mpr, best_score
     sub     mpr, rec        ; 0 =< |rec (recieved) - mpr (best_score) | =< 71
             ; If mpr > rec Then After sub mpr > 0   recieved is the better score
@@ -169,10 +172,13 @@ REC_SCORE: ; State is 1
     mov     best_botId, tmp_botid
     mov     best_score, rec
     clr     tmp_botid
+    clr     game_state
     dec     players_active
+    rjmp    DONE_Rec
 
 STILL_BEST:
     clr     game_state
+    dec     players_active
 
 DONE_Rec:
     ret
