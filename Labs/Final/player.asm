@@ -553,15 +553,13 @@ NEXT_ROUND:
 WIN_ROUND:
     call    PrintWinRound    ; We Won
     call    IncRound         ; Round = Round + 1
+    call    IncScore
+
     clr     mpr
     call    SetHand          ; Reset Hand
 
-    ldi     mpr, 0
-    mov     game_state, mpr  ; Set game state to 0
+    clr     game_state      ; Set game state to 0
 
-    call    PrintNewRound
-    ldi     waitcount, 150
-    call    Do_Wait
     rjmp    DONE_REC
 
 NEW_GAME:

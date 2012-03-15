@@ -95,19 +95,21 @@ MAIN:
         rjmp MAIN
 
 START_NEWROUND:
+        ldi     rec, 100
+        call    Do_Wait
         mov     mpr, best_botId
         inc     mpr
         call    USART_Transmit
-        ldi     rec, 100
+        ldi     rec, 150
         call    Do_Wait
-        ldi     mpr, NewRound
-        call    USART_Transmit
         ldi     mpr, 1
         mov     players_active, mpr
         clr     best_score
         clr     game_state
         ldi     mpr, NewRound
         call    USART_Transmit
+        ldi     mpr, 32
+        out     PORTB, mpr
 rjmp MAIN
 
 .include "LCDDriver.asm"		; Include the LCD Driver
@@ -128,6 +130,7 @@ SetBestScore:
 ;----------------------------------------------------------------
 ; Sub: USART_Receive
 ; Desc: Receive data over IR Calculate Bot with best score
+;   Make sure it's not one of our commands
 ;   if game_state == 0:
 ;       receive BotId
 ;       tmp_botid = BotId
@@ -146,6 +149,11 @@ USART_Receive:
 
     ; Get and return receive data from receive buffer
     lds rec, UDR1 ; rec has what was received
+
+    cpi     rec, NewRound
+    breq    DONE_Rec
+    cpi     rec, WinId
+    breq    DONE_Rec
 
     mov     mpr, game_state ; rec is tmp_botid
     cpi     mpr, 0
