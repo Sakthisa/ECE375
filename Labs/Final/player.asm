@@ -21,6 +21,8 @@
 .equ	BHit     = 0b11111110				; Right Whisker Input Bit
 .equ	BStay    = 0b11111101
 
+.equ    BustCode = 0b00000000
+
 .equ    NewGame  = 0b10000111
 .equ    NewRound = 0b10011111
 
@@ -390,11 +392,17 @@ DoHit:
     ret
 BUST:
     ; They busted
-    call PrintBust
+    call    PrintBust
+    ldi     mpr, BotId
+    call    USART_Transmit  ; Send BotId
+
+    ldi     mpr, BustCode
+    call    USART_Transmit  ; Send Bust code
     ldi     waitcount, 200
     call    Do_Wait
+    call    PrintStay
 
-    rjmp DoStay
+    rjmp STATE1
 
 
 ;----------------------------------------------------------------
@@ -543,11 +551,10 @@ NEXT_ROUND:
     clr     mpr
     call    SetHand          ; Reset Hand
 
-    ldi     mpr, 0
-    mov     game_state, mpr  ; Set game state to 0
+    clr     mpr              ; Set game state to 0
 
     call    PrintNewRound
-    ldi     waitcount, 150
+    ldi     waitcount, 100
     call    Do_Wait
     rjmp    DONE_REC
 WIN_ROUND:
@@ -560,6 +567,9 @@ WIN_ROUND:
 
     clr     game_state      ; Set game state to 0
 
+    ldi     waitcount, 100
+    call    Do_Wait
+    call    Playing_LN2
     rjmp    DONE_REC
 
 NEW_GAME:

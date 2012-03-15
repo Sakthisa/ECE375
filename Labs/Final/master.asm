@@ -97,6 +97,15 @@ MAIN:
 START_NEWROUND:
         ldi     rec, 100
         call    Do_Wait
+        mov     mpr, best_score
+        cpi     mpr, 0
+        ; Make sure everyone didn't bust.
+        breq    EVERYONE_BUSTS
+        rjmp    SEND_WINNER
+EVERYONE_BUSTS:
+        clr     best_botId
+SEND_WINNER:
+
         mov     mpr, best_botId
         inc     mpr
         call    USART_Transmit
