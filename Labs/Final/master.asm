@@ -88,6 +88,7 @@ USART_INIT:
 		sei						; Turn on interrupts
         ldi     mpr, 1
         mov     players_active, mpr
+        clr     game_state
 MAIN:
         mov     mpr, players_active
         cpi     mpr, 0
