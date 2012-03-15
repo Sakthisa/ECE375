@@ -1,7 +1,7 @@
 .include "m128def.inc"			; Include the ATMega128 Definition Doc
 .def	mpr = r16				; Multi-purpose register defined for LCDDV2
 .def	game_state = r5			; Game State
-.def    best_botID = r7
+.def    best_botId = r7
 .def    best_score = r8
 .def    tmp_botid        = r9
 .def    tmp2        = r10
@@ -162,7 +162,9 @@ USART_Receive:
 
     cpi     rec, NewRound
     breq    DONE_Rec
-    cpi     rec, WinId
+    mov     r23, best_botId
+    inc     r23
+    cp      rec, r23
     breq    DONE_Rec
 
     mov     mpr, game_state ; rec is tmp_botid
