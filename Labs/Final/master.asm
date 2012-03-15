@@ -18,8 +18,8 @@
 ; Controls
 .equ	BStartGame     = 0b11111110				; Right Whisker Input Bit
 .equ	BStay          = 0b11111101
-.equ    NewGame        = 0b00000111
-.equ    NewRound       = 0b00011111
+.equ    NewGame        = 0b10000111
+.equ    NewRound       = 0b10011111
 
 ;BotId
 .equ    BotID = 0b10101010
@@ -63,6 +63,12 @@ USART_INIT:
         ; UCSR1A control register -- Bit 1 – U2Xn: Double the USART Transmission Speed
         sts UCSR1A, r16
 
+        ; Initialize Port B for output
+        ldi     mpr, $00        ; Initialize Port B for outputs
+        out     PORTB, mpr      ; Port B outputs low
+        ldi     mpr, $ff        ; Set Port B Directional Register
+        out     DDRB, mpr       ; for output
+
         ;Set baudrate at 2400bps
         ; UBRR1H Bod rate control register
         ldi r16, high(832)
@@ -92,13 +98,16 @@ START_NEWROUND:
         mov     mpr, best_botId
         inc     mpr
         call    USART_Transmit
-        ldi     rec, 25
+        ldi     rec, 100
         call    Do_Wait
         ldi     mpr, NewRound
         call    USART_Transmit
         ldi     mpr, 1
         mov     players_active, mpr
         clr     best_score
+        clr     game_state
+        ldi     mpr, NewRound
+        call    USART_Transmit
 rjmp MAIN
 
 .include "LCDDriver.asm"		; Include the LCD Driver
@@ -130,7 +139,6 @@ SetBestScore:
 ;           ldi  game_state, 0
 ;----------------------------------------------------------------
 USART_Receive:
-    push mpr
     ; Wait for data to be received
     lds mpr, UCSR1A
     sbrs mpr, RXC1
@@ -155,7 +163,7 @@ REC_SCORE: ; State is 1
             ; If mpr > rec Then After sub mpr > 0   recieved is the better score
             ; If mpr < rec Then After sub mpr < 0   best_score is still best score
     cpi     mpr, 0
-    brge    STILL_BEST ; TODO, is this right?
+    brge    STILL_BEST      ; TODO, is this right?
 
     ; Update best score
     mov     best_botId, tmp_botid
@@ -165,9 +173,9 @@ REC_SCORE: ; State is 1
 
 STILL_BEST:
     clr     game_state
+    dec     players_active
 
 DONE_Rec:
-    pop mpr
     ret
 ;----------------------------------------------------------------
 ; Sub: USART_Transmit
@@ -175,7 +183,6 @@ DONE_Rec:
 ;       Sends value found in mpr and then returns
 ;----------------------------------------------------------------
 USART_Transmit:
-    push rec ; Use rec as garbage variable.
     lds rec, UCSR1A
     sbrs rec, UDRE1
     ; Load status of USART1
@@ -183,7 +190,6 @@ USART_Transmit:
     rjmp USART_Transmit
     ; Send data
     sts UDR1, mpr
-    pop rec
     ret
 
 ;----------------------------------------------------------------

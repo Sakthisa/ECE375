@@ -409,6 +409,8 @@ DoStay:
     mov     game_state, mpr ; Go to state 0, waiting for reply
     ldi     mpr, BotId
     call    USART_Transmit  ; Send BotId
+    ldi     waitcount, 10
+    call    Do_Wait
     call    GetHand         ; Stores hand into mpr
     call    USART_Transmit  ; Send Hand
 
