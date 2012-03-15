@@ -1,10 +1,9 @@
 .include "m128def.inc"			; Include the ATMega128 Definition Doc
 .def	mpr = r16				; Multi-purpose register defined for LCDDV2
 .def	game_state = r5			; Game State
-.def	rec = r6			; Receving State
 .def    best_botID = r7
 .def    best_score = r8
-.def    tmp        = r9
+.def    tmp_botid        = r9
 .def    tmp2        = r10
                                 ; State 0 = Waiting For players to send scores
 .def    players_active = r11         ; Used to tell if all players have reported in their hands.
@@ -99,6 +98,7 @@ START_NEWROUND:
         call    USART_Transmit
         ldi     mpr, 1
         mov     players_active, mpr
+        clr     best_score
 rjmp MAIN
 
 .include "LCDDriver.asm"		; Include the LCD Driver
@@ -121,12 +121,12 @@ SetBestScore:
 ; Desc: Receive data over IR Calculate Bot with best score
 ;   if game_state == 0:
 ;       receive BotId
-;       tmp = BotId
+;       tmp_botid = BotId
 ;   if game_state == 1:
 ;       if rec > BestHand:
-;           mov  tmp, best_botId
+;           mov  tmp_botid, best_botId
 ;           mov  rec, best_score
-;           clr  tmp
+;           clr  tmp_botid
 ;           ldi  game_state, 0
 ;----------------------------------------------------------------
 USART_Receive:
@@ -137,31 +137,31 @@ USART_Receive:
     rjmp USART_Receive
 
     ; Get and return receive data from receive buffer
-    lds mpr, UDR1
+    lds rec, UDR1 ; rec has what was received
 
-    mov     rec, game_state ; rec is tmp
-    cpi     rec, 0
+    mov     mpr, game_state ; rec is tmp_botid
+    cpi     mpr, 0
     breq    REC_BOTID  ; jump to State 0
     rjmp    REC_SCORE  ; Goto to State 1
 REC_BOTID: ; State is 0
-    mov     tmp, mpr ; tmp not has BotId
+    mov     tmp_botid, rec ; tmp_botid not has BotId
     inc     game_state ; set state to 1
-    rjmp   DONE_Rec
+    rjmp    DONE_Rec
 
 REC_SCORE: ; State is 1
-    push    mpr   ; Save rec
-    mov     rec, best_score
-    sub     mpr, rec ; 0 =< |mpr (recieved) - rec (best_score) | =< 71
-            ; If mpr > rec Then After sub mpr > 0   recieved is the better score
-            ; If mpr < rec Then After sub mpr < 0   best_score is still best score
+    push    mpr             ; Save mpr
+    mov     mpr, best_score
+    sub     rec, mpr        ; 0 =< |rec (recieved) - mpr (best_score) | =< 71
+            ; If rec > mpr Then After sub mpr > 0   recieved is the better score
+            ; If rec < mpr Then After sub mpr < 0   best_score is still best score
     cpi     mpr, 0
     brlt    STILL_BEST ; TODO, is this right?
 
     pop mpr       ; Get what we originally received
     ; Update best score
-    mov     best_botId, tmp
+    mov     best_botId, tmp_botid
     mov     best_score, mpr
-    clr     tmp
+    clr     tmp_botid
     dec     players_active
 
 STILL_BEST:
