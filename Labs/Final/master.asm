@@ -155,9 +155,8 @@ REC_SCORE: ; State is 1
             ; If mpr > rec Then After sub mpr > 0   recieved is the better score
             ; If mpr < rec Then After sub mpr < 0   best_score is still best score
     cpi     mpr, 0
-    brgt    STILL_BEST ; TODO, is this right?
+    brge    STILL_BEST ; TODO, is this right?
 
-    pop mpr       ; Get what we originally received
     ; Update best score
     mov     best_botId, tmp_botid
     mov     best_score, rec
