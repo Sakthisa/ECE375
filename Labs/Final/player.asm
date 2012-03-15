@@ -396,11 +396,16 @@ BUST:
     ldi     mpr, BotId
     call    USART_Transmit  ; Send BotId
 
+    ldi     waitcount, 100
+    call    Do_Wait
+
     ldi     mpr, BustCode
     call    USART_Transmit  ; Send Bust code
-    ldi     waitcount, 200
+    ldi     waitcount, 100
     call    Do_Wait
     call    PrintStay
+    ldi     mpr, 1
+    mov     game_state, mpr ; Go to state 1, waiting for reply
 
     rjmp STATE1
 
@@ -554,8 +559,9 @@ NEXT_ROUND:
     clr     mpr              ; Set game state to 0
 
     call    PrintNewRound
-    ldi     waitcount, 100
+    ldi     waitcount, 10
     call    Do_Wait
+    call    Playing_LN2
     rjmp    DONE_REC
 WIN_ROUND:
     call    PrintWinRound    ; We Won

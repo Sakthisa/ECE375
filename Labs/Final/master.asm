@@ -109,16 +109,16 @@ SEND_WINNER:
         mov     mpr, best_botId
         inc     mpr
         call    USART_Transmit
-        ldi     rec, 150
+        ldi     rec, 200
         call    Do_Wait
+
         ldi     mpr, 1
         mov     players_active, mpr
+
         clr     best_score
         clr     game_state
         ldi     mpr, NewRound
         call    USART_Transmit
-        ldi     mpr, 32
-        out     PORTB, mpr
 rjmp MAIN
 
 .include "LCDDriver.asm"		; Include the LCD Driver
