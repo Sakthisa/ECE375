@@ -392,18 +392,17 @@ DoHit:
     ret
 BUST:
     ; They busted
-    call    PrintBust
     ldi     mpr, BotId
     call    USART_Transmit  ; Send BotId
 
-    ldi     waitcount, 100
+    ldi     waitcount, 10
     call    Do_Wait
 
     ldi     mpr, BustCode
     call    USART_Transmit  ; Send Bust code
+    call    PrintStay
     ldi     waitcount, 100
     call    Do_Wait
-    call    PrintStay
     ldi     mpr, 1
     mov     game_state, mpr ; Go to state 1, waiting for reply
 
@@ -556,10 +555,14 @@ NEXT_ROUND:
     clr     mpr
     call    SetHand          ; Reset Hand
 
-    clr     mpr              ; Set game state to 0
+
+    clr     mpr
+    call    SetHand          ; Reset Hand
+
+    clr     game_state      ; Set game state to 0
 
     call    PrintNewRound
-    ldi     waitcount, 10
+    ldi     waitcount, 100
     call    Do_Wait
     call    Playing_LN2
     rjmp    DONE_REC
@@ -656,5 +659,4 @@ NEW_ROUND:
 SAY_STAY:
 .DB " WAIT 4 RESULTS " ;
 SHOW_HAND:
-.DB "Hit/Stay HAND:%%" ; Values at 14 and 15
-
+.DB "Hit/Stay HAND:%%" ; Values at 14 and 1500
