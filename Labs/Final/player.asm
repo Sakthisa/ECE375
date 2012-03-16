@@ -1,10 +1,12 @@
+; Riley Hickman & Jacques Uber
+; ECE375 Final Lab
+; player.asm
+
 .include "m128def.inc"			; Include the ATMega128 Definition Doc
 .def	mpr = r16				; Multi-purpose register defined for LCDDV2
 .def	game_state = r5			; Game State
                                 ; State 0 = Player can hit or stay.
                                 ; State 1 = Player Has hit waiting for results.
-                                ; State 2 = Player Has recieved either Win or
-                                ;           Loss GOTO state 0
 .def    rec = r6
 .def    tmp = r7
 .def	ReadCnt = r23			; Counter used to read data from Program Memory
@@ -66,6 +68,7 @@ INIT:							; Initialize Stack Pointer
         out     PORTD, mpr      ; with Tri-State
         ldi     mpr, $00        ; Set Port D Directional Register
         out     DDRD, mpr       ; for inputs
+
 USART_INIT:
         ;Set double data rate
         ldi r16, (1<<U2X1)
@@ -114,23 +117,23 @@ USART_INIT:
 
 MAIN:
 PLAY_GAME:
-        call    Playing_LN1
-        ldi     waitcount, 10   ; Refresh the LED
+        call    Playing_LN1   ; Print score and round to the first line of the LED
+        ldi     waitcount, 10
         call    Do_Wait
 
-        in      mpr, PIND       ; Get PIND
+        in      mpr, PIND         ; Get PIND
         cpi     mpr, BHit
         breq    PLAYER_HIT        ; Did the player hit?
         rjmp    CHECK_STAY
 PLAYER_HIT:
-        call    DoHit
+        call    DoHit             ; The player hit
         ldi     waitcount, 20 ; Give some delay so we don't over do it on the buttons
         call    Do_Wait
 
 CHECK_STAY:
         in      mpr, PIND       ; Get whisker input from Port D
-        cpi     mpr, BStay
-        breq    PLAYER_STAY        ; Right
+        cpi     mpr, BStay      ; The player stayed
+        breq    PLAYER_STAY     ; Right
         rjmp    PLAYER_DONE
 PLAYER_STAY:
         call    DoStay
@@ -216,6 +219,7 @@ PrintBust:
 		ldi		ReadCnt, LCDMaxCnt
         rjmp    INIT_LINE2meta
 
+; This does the actual printing.
 INIT_LINE2meta:
         lpm		mpr, Z+			; Read Program memory
         st		Y+, mpr			; Store into memory

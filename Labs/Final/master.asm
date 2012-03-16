@@ -1,3 +1,7 @@
+; Riley Hickman & Jacques Uber
+; ECE375 Final Lab
+; master.asm
+
 .include "m128def.inc"			; Include the ATMega128 Definition Doc
 .def	mpr = r16				; Multi-purpose register defined for LCDDV2
 .def	game_state = r5			; Game State
@@ -90,12 +94,16 @@ USART_INIT:
         mov     players_active, mpr
         clr     game_state
 MAIN:
+        ; Loop until all players have checked in.
         mov     mpr, players_active
         cpi     mpr, 0
         breq    START_NEWROUND
         rjmp MAIN
 
 START_NEWROUND:
+        ; All players have checked in.
+        ; Start new round
+
         ldi     rec, 100
         call    Do_Wait
         mov     mpr, best_score
@@ -104,12 +112,12 @@ START_NEWROUND:
         breq    EVERYONE_BUSTS
         rjmp    SEND_WINNER
 EVERYONE_BUSTS:
-        clr     best_botId
+        clr     best_botId ; If everyone busted, set best_botId to zero
 SEND_WINNER:
 
         mov     mpr, best_botId
         inc     mpr
-        call    USART_Transmit
+        call    USART_Transmit ; Send winning botId
         ldi     rec, 200
         call    Do_Wait
 
@@ -119,7 +127,7 @@ SEND_WINNER:
         clr     best_score
         clr     game_state
         ldi     mpr, NewRound
-        call    USART_Transmit
+        call    USART_Transmit ; Send new round command
 rjmp MAIN
 
 .include "LCDDriver.asm"		; Include the LCD Driver
