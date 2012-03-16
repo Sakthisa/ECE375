@@ -18,5 +18,9 @@ mbuild:
 minstall:
 	/usr/local/bin/avrdude -c osuisp2 -P /dev/usb/hiddev0 -p m128 -e -U flash:w:$(FILE1).hex -v
 
+wu:
+	pdflatex l7.tex
+	evince l7.pdf
+
 clean:
 	rm $(FILE).hex

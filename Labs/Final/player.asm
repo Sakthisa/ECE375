@@ -636,7 +636,7 @@ GetRand:
 ;			((3 * line + 3) * type + 3) * waitcount + 13 + call
 ;----------------------------------------------------------------
 Do_Wait:
-		push	waitcount			; Save wait register
+		push	waitcount		; Save wait register
 		push	line			; Save line register
 		push	type			; Save type register
 
