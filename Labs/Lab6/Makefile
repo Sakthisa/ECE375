@@ -26,5 +26,11 @@ sinstall: sbuild
 
 all: minstall sinstall
 
+report:
+	pdflatex ece375-lab4.tex
+	evince ece375-lab4.pdf
+	rm *.aux
+	rm *.log
+
 clean:
 	rm *.hex

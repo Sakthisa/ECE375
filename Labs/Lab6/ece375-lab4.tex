@@ -56,7 +56,6 @@ I/O is hard.
 \section{Source Code}
 MASTER Code
 \begin{verbatim}
-
 ;***********************************************************
 ;*
 ;*	Enter Name of file here
@@ -90,11 +89,12 @@ MASTER Code
 
 .equ	B0 = 0b11111110				; Right Whisker Input Bit
 .equ	B1 = 0b11111101
-.equ	B2 = 0b01010101
+.equ	B2 = 0b11111011
 .equ	B3 = 0b11110111
 .equ	B4 = 0b11101111
 .equ	B5 = 0b11011111
 .equ	B6 = 0b10111111
+.equ	B7 = 0b01111111
 .equ	FREEZE = 0b11111000
 
 .equ	WskrR = 0				; Right Whisker Input Bit
@@ -105,7 +105,7 @@ MASTER Code
 .equ	EngDirL = 6				; Left Engine Direction Bit
 
 ;.equ	BotID = ;(Enter you group ID here (8bits)); Unique XD ID (MSB = 0)
-.equ	BotID = 0b11111111 ;(Enter you group ID here (8bits)); Unique XD ID (MSB = 0)
+.equ	BotID = 0b01111111 ;(Enter you group ID here (8bits))
 
 ;/////////////////////////////////////////////////////////////
 ;These macros are the values to make the TekBot Move.
@@ -128,6 +128,10 @@ MASTER Code
 .org	$0000					; Beginning of IVs
 		rjmp 	INIT			; Reset interrupt
 
+;Should have Interrupt vectors for:
+;.org    $003C
+;    rcall USART_Receive
+;    reti
 ;- Left wisker
 ;- Right wisker
 ;- USART receive
@@ -159,7 +163,8 @@ INIT:
 USART_INIT:
         ;Set double data rate
         ldi r16, (1<<U2X1)
-        ; UCSR1A control register -- Bit 1 – U2Xn: Double the USART Transmission Speed
+        ; UCSR1A control register --
+        ;Bit 1 – U2Xn: Double the USART Transmission Speed
         sts UCSR1A, r16
 
         ;Set baudrate at 2400bps
@@ -176,7 +181,7 @@ USART_INIT:
 
         ;Enable both receiver and transmitter -- needed for Lab 2
         ; RXEN (Receiver enable) TXEN (Transmit enable)
-        ldi r16, (1<<RXCIE1|1<<RXEN1|1<<TXEN1)
+        ldi r16, (1<<RXCIE1|1<<RXEN1|1<<TXEN1) 
         sts UCSR1B, r16
 
 	;External Interrupts
@@ -195,20 +200,48 @@ USART_INIT:
 
 ;-----------------------------------------------------------
 ; Main Program
-;----------------------------------------------------------
+;-----------------------------------------------------------
+        ldi   tmp, $00
 MAIN:
+        ; Clear lds
+        clr mpr
+        out PORTB, mpr
+
         ldi   mpr, $00
+
         in    mpr, PIND       ; Get whisker input from Port D
         cpi   mpr, B0
-        breq   BUTTON0
+        breq   BUTTON0        ; Left
 
         in    mpr, PIND       ; Get whisker input from Port D
         cpi   mpr, B1
-        breq   BUTTON1
+        breq   BUTTON1        ; Right
 
         in    mpr, PIND       ; Get whisker input from Port D
         cpi   mpr, B5
         breq   SENDFREEZE  ; Button 5
+
+
+
+        ;in    mpr, PIND       ; Get whisker input from Port D
+        ;cpi   mpr, B2
+        ;breq   BUTTON2        ; Forward
+
+        ;in    mpr, PIND       ; Get whisker input from Port D
+        ;cpi   mpr, B3
+        ;breq   BUTTON3        ; Backward
+
+        in    mpr, PIND       ; Get whisker input from Port D
+        cpi   mpr, B4
+        breq   BUTTON4        ; Halt
+
+        in    mpr, PIND       ; Get whisker input from Port D
+        cpi   mpr, B6
+        breq   BUTTON6        ; Halt
+
+        in    mpr, PIND       ; Get whisker input from Port D
+        cpi   mpr, B7
+        breq   BUTTON7        ; Halt
 
         ; Clear lds
         clr mpr
@@ -217,7 +250,11 @@ MAIN:
         rjmp MAIN
 
 
-BUTTON0:
+        ;in    mpr, PIND       ; Get whisker input from Port D
+        ;cpi   mpr, B6
+
+
+BUTTON0: ;Left
         ; Load bot id
         ldi mpr, BotID
         ; Send bot id
@@ -227,7 +264,7 @@ BUTTON0:
         out PORTB, mpr
         call USART_Transmit
         jmp MAIN
-BUTTON1:
+BUTTON1: ;Right
         ; Load bot id
         ldi mpr, BotID
         ; Send bot id
@@ -237,7 +274,7 @@ BUTTON1:
         out PORTB, mpr
         call USART_Transmit
         jmp MAIN
-SENDFREEZE:
+SENDFREEZE: ;Freeze
         ; Load bot id
         ldi mpr, BotID
         ; Send bot id
@@ -247,6 +284,49 @@ SENDFREEZE:
         out PORTB, mpr
         call USART_Transmit
         jmp MAIN
+BUTTON2:
+        ; Load bot id
+        ldi mpr, BotID
+        ; Send bot id
+        call USART_Transmit
+
+        ldi   mpr, 0b00000101
+        out PORTB, mpr
+        call USART_Transmit
+        jmp MAIN
+BUTTON4: ;Forward
+        ; Load bot id
+        ldi mpr, BotID
+        ; Send bot id
+        call USART_Transmit
+
+        ldi   mpr, MovFwd
+        out PORTB, mpr
+        call USART_Transmit
+        jmp MAIN
+
+BUTTON6: ;Backward
+        ; Load bot id
+        ldi mpr, BotID
+        ; Send bot id
+        call USART_Transmit
+
+        ldi   mpr, MovBck
+        out PORTB, mpr
+        call USART_Transmit
+        jmp MAIN
+
+BUTTON7: ;Halt
+        ; Load bot id
+        ldi mpr, BotID
+        ; Send bot id
+        call USART_Transmit
+
+        ldi   mpr, Halt
+        out PORTB, mpr
+        call USART_Transmit
+        jmp MAIN
+
 
 rjmp MAIN
 
@@ -278,6 +358,12 @@ USART_Transmit:
     ret
 
 
+
+
+
+;***********************************************************
+;*	Stored Program Data
+;***********************************************************
 
 
 
@@ -339,6 +425,7 @@ Slave Code
 .def	waitcnt = r21				; Wait Loop Counter
 .def	rec = r22				; What we received Register
 .def	tmp = r20				; What we received Register
+.def	tmp2 = r25				; What we received Register
 .def	cmd = r24				; What we received Register
 .def	state = r23				; State register.
 .def	ilcnt = r18				; Inner Loop Counter
@@ -380,15 +467,26 @@ Slave Code
 .org	$0000					; Beginning of IVs
 		rjmp 	INIT			; Reset interrupt
 
+;- Right wisker
+; Reset interrupt
+.org $0004
+rcall HitRight ; Call hit right function
+reti
+
+;- Left wisker (For some reason putting this in $0006 broke stuff)
+; Return from interrupt
+.org $0002
+rcall HitLeft ; Call hit left function
+reti
+
 ;Should have Interrupt vectors for:
 .org    $003C
-    rcall USART_Receive
-    reti
-;- Left wisker
-;- Right wisker
+rcall USART_Receive
+reti
 ;- USART receive
 
 
+.org	$0046				; End of Interrupt Vectors
 ;-----------------------------------------------------------
 ; Program Initialization
 ;-----------------------------------------------------------
@@ -431,7 +529,8 @@ USART_INIT:
         sts UCSR1C, r16
 
         ;Enable both receiver and transmitter -- needed for Lab 2
-        ldi r16, (1<<RXCIE1|1<<RXEN1|1<<TXEN1) ; RXEN (Receiver enable) TXEN (Transmit enable)
+        ; RXEN (Receiver enable) TXEN (Transmit enable)
+        ldi r16, (1<<RXCIE1|1<<RXEN1|1<<TXEN1) 
         sts UCSR1B, r16
 
 	;External Interrupts
@@ -440,6 +539,14 @@ USART_INIT:
 
 		;Enable receiver and enable receive interrupts
 		;Set the External Interrupt Mask
+        ; Set INT4 & 5 to trigger on falling edge
+        ldi mpr, $00
+        sts EICRA, mpr
+
+        ; Use sts, EICRA in extended I/O space
+        ; Set the External Interrupt Mask
+        ldi mpr, (1 <<INT2)|(1 <<INT1)|(1 <<INT0)
+        out EIMSK, mpr
 
         ; Set the Interrupt Sense Control to falling edge
         ldi mpr, (1 <<ISC41)|(0 <<ISC40)|(1 <<ISC51)|(0 <<ISC50)
@@ -456,8 +563,9 @@ USART_INIT:
         clr     numFrozen
         clr     cmd
 MAIN:
+        clr cmd
         out PORTB, cmd
-        ldi waitcnt, 20 ; Wait for 1 second
+        ldi waitcnt, 10 ; Wait for 1 second
         call Wait
         clr cmd
         out PORTB, cmd
@@ -523,7 +631,7 @@ DO_FROZEN:
     clr mpr
     out PORTB, mpr
     inc numFrozen
-    cpi    numFrozen, $03
+    cpi    numFrozen, 5
     breq LOOP_FOREVER
     ret
 LOOP_FOREVER:
@@ -552,7 +660,6 @@ DO_FREEZE:
     ret
 
 USART_Transmit:
-    cli ; Disable all interrupts
     lds tmp, UCSR1A
     sbrs tmp, UDRE1
     ; Load status of USART1
@@ -561,19 +668,88 @@ USART_Transmit:
     ; Send data
     sts UDR1, mpr
     ; Move data to transmit data buffer
-    ldi waitcnt, 20 ; Wait for 1 second
-    call Wait
-    sei
+    ;ldi waitcnt, 20 ; Wait for 1 second
+    ;call Wait
     ret
 
 
 
 
 
+;***********************************************************
+;*	Stored Program Data
+;***********************************************************
+
+
 
 ;***********************************************************
 ;*	Additional Program Includes
 ;***********************************************************
+;----------------------------------------------------------------
+; Sub:	HitRight
+; Desc:	Handles functionality of the TekBot when the right whisker
+;		is triggered.
+;----------------------------------------------------------------
+HitRight:
+		push	mpr			; Save mpr register
+		push	waitcnt			; Save wait register
+		in		mpr, SREG	; Save program state
+		push	mpr			;
+
+		; Move Backwards for a second
+		ldi		mpr, MovBck	; Load Move Backwards command
+		out		PORTB, mpr	; Send command to port
+		ldi		waitcnt, WTime	; Wait for 1 second
+		rcall	Wait			; Call wait function
+
+		; Turn left for a second
+		ldi		mpr, TurnL	; Load Turn Left Command
+		out		PORTB, mpr	; Send command to port
+		ldi		waitcnt, WTime	; Wait for 1 second
+		rcall	Wait			; Call wait function
+
+		; Move Forward again
+		ldi		mpr, MovFwd	; Load Move Forwards command
+		out		PORTB, mpr	; Send command to port
+
+		pop		mpr		; Restore program state
+		out		SREG, mpr	;
+		pop		waitcnt		; Restore wait register
+		pop		mpr		; Restore mpr
+		ret				; Return from subroutine
+
+;----------------------------------------------------------------
+; Sub:  HitLeft
+; Desc: Handles functionality of the TekBot when the left whisker
+;       is triggered.
+;----------------------------------------------------------------
+HitLeft:
+        push    mpr         ; Save mpr register
+        push    waitcnt     ; Save wait register
+        in      mpr, SREG   ; Save program state
+        push    mpr         ;
+
+        ; Move Backwards for a second
+        ldi     mpr, MovBck ; Load Move Backwards command
+        out     PORTB, mpr  ; Send command to port
+        ldi     waitcnt, WTime  ; Wait for 1 second
+        rcall   Wait            ; Call wait function
+
+        ; Turn right for a second
+        ldi     mpr, TurnR  ; Load Turn Left Command
+        out     PORTB, mpr  ; Send command to port
+        ldi     waitcnt, WTime  ; Wait for 1 second
+        rcall   Wait            ; Call wait function
+
+        ; Move Forward again    
+        ldi     mpr, MovFwd ; Load Move Forwards command
+        out     PORTB, mpr  ; Send command to port
+
+        pop     mpr     ; Restore program state
+        ;out     SREG, mpr   ;
+        pop     waitcnt     ; Restore wait register
+        pop     mpr     ; Restore mpr
+        ret             ; Return from subroutine
 
 ;----------------------------------------------------------------
 ; Sub:	Wait
@@ -595,7 +771,7 @@ ILoop:	dec		ilcnt			; decrement ilcnt
 		dec		olcnt		; decrement olcnt
 		brne	OLoop			; Continue Outer Loop
 		dec		waitcnt		; Decrement wait
-		brne	Loop			; Continue Wait loop
+		brne	Loop			; Continue Wait loop	
 
 		pop		olcnt		; Restore olcnt register
 		pop		ilcnt		; Restore ilcnt register
